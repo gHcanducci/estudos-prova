@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Simulado PDS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: uma questão por vez, coluna única; tela inicial com filtros, tela final com revisão dos erros */
+:root{
+  --bg:#f3f6f9; --surface:#ffffff; --surface2:#e9eef4; --fg:#142230; --muted:#4d6073; --line:#d3dce6;
+  --accent:#1f5fbf; --accent-soft:#dbe8fb; --ok:#17784a; --ok-soft:#dcf2e6; --bad:#b42318; --bad-soft:#fbe3e1;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Schibsted Grotesk","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1620; --surface:#15212d; --surface2:#1c2b3a; --fg:#e6eef6; --muted:#9db0c3; --line:#2a3b4d;
+  --accent:#6ea6f5; --accent-soft:#1b3050; --ok:#5fcf96; --ok-soft:#173a2b; --bad:#f08a80; --bad-soft:#3d1c1a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1620; --surface:#15212d; --surface2:#1c2b3a; --fg:#e6eef6; --muted:#9db0c3; --line:#2a3b4d;
+  --accent:#6ea6f5; --accent-soft:#1b3050; --ok:#5fcf96; --ok-soft:#173a2b; --bad:#f08a80; --bad-soft:#3d1c1a; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding-block:36px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1,h2{font-family:var(--display);line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:clamp(2rem,6vw,2.6rem);letter-spacing:-.02em}
+h2{font-size:1.3rem}
+p{margin:0}
+.label{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.muted{color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface2);color:var(--fg);border-radius:999px;padding:8px 14px;font:inherit;font-size:.92rem;cursor:pointer;min-height:40px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#0e1620}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0e1620}}
+.btn{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:var(--accent);color:#fff;min-height:46px}
+:root[data-theme="dark"] .btn{color:#0e1620}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn{color:#0e1620}}
+.btn.sec{background:var(--surface2);color:var(--fg);border:1px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bar{height:8px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+.q{font-family:var(--display);font-size:1.25rem;line-height:1.3}
+pre{margin:0;font-family:var(--mono);font-size:.8rem;line-height:1.45;background:var(--surface2);border-radius:10px;padding:14px;overflow-x:auto;white-space:pre}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{text-align:left;font:inherit;background:var(--surface);color:var(--fg);border:1.5px solid var(--line);border-radius:12px;padding:13px 15px;cursor:pointer;display:flex;gap:12px;align-items:flex-start}
+.opt b{font-family:var(--mono);color:var(--muted);flex:none}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt:disabled{cursor:default}
+.exp{border-radius:12px;padding:14px 16px;background:var(--surface2)}
+.exp.ok{background:var(--ok-soft)} .exp.no{background:var(--bad-soft)}
+.score{font-family:var(--display);font-size:3rem;line-height:1}
+.err{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:6px}
+.err:first-child{border-top:0;padding-top:0}
+.tag{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.stat{background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:.9rem}
+[hidden]{display:none!important}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+<a href="../" style="color:var(--accent);font-weight:600;text-decoration:none">← Início</a>
+<header style="display:flex;flex-direction:column;gap:10px">
+  <span class="label">Processo de Desenvolvimento de Software</span>
+  <h1>Simulado PDS</h1>
+  <p class="muted">Questões baseadas no resumo da matéria, com exemplos do FrequênciaFácil. Uma questão por vez, sem tempo.</p>
+</header>
+
+<!-- INÍCIO -->
+<section id="start" class="card">
+  <h2>Monte o seu simulado</h2>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <span class="label">Assuntos</span>
+    <div class="chips" id="topics"></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <span class="label">Quantidade</span>
+    <div class="chips" id="sizes"></div>
+  </div>
+  <p class="muted" id="avail"></p>
+  <div class="row"><button class="btn" id="go">Começar simulado →</button></div>
+</section>
+
+<!-- QUESTÃO -->
+<section id="quiz" hidden style="display:flex;flex-direction:column;gap:16px">
+  <div class="row" style="justify-content:space-between">
+    <span class="tag" id="qtopic"></span>
+    <span class="muted" id="qcount" style="font-size:.9rem"></span>
+  </div>
+  <div class="bar"><i id="qbar"></i></div>
+  <p class="q" id="qtext"></p>
+  <pre id="qdiag" hidden></pre>
+  <div class="opts" id="qopts"></div>
+  <div class="exp" id="qexp" hidden></div>
+  <div class="row">
+    <button class="btn" id="confirm" disabled>Confirmar</button>
+    <button class="btn" id="next" hidden>Próxima →</button>
+    <button class="btn sec" id="quit" style="margin-left:auto">Encerrar</button>
+  </div>
+</section>
+
+<!-- RESULTADO -->
+<section id="result" hidden style="display:flex;flex-direction:column;gap:18px">
+  <div class="card">
+    <span class="label">Resultado</span>
+    <div class="row" style="align-items:baseline;gap:14px"><span class="score" id="rscore"></span><span class="muted" id="rpct"></span></div>
+    <p id="rmsg"></p>
+    <div class="stats" id="rstats"></div>
+    <div class="row">
+      <button class="btn" id="redo">Refazer as erradas</button>
+      <button class="btn sec" id="again">Novo simulado</button>
+    </div>
+  </div>
+  <div class="card" id="rerrs"></div>
+</section>
+
+</div>
+
+<script>
+const BANK = [
+// ---------- PROCESSO ----------
+{t:"Processo",q:"Segundo o IEEE, Engenharia de Software é:",o:["A aplicação de uma abordagem sistemática, disciplinada e quantificável ao desenvolvimento, operação e manutenção de software","O conjunto de ferramentas CASE usadas para gerar código automaticamente","A arte de programar com criatividade, sem regras fixas","O processo de documentar todo o sistema antes de começar a codificar"],e:"Definição do IEEE 610.12: abordagem sistemática, disciplinada e quantificável para desenvolver, operar e manter software."},
+{t:"Processo",q:"Para Pressman, qualidade de software é:",o:["Conformidade a requisitos declarados, a padrões documentados e a características implícitas esperadas","Ausência total de bugs no código-fonte","Velocidade de execução do sistema em produção","Quantidade de documentação produzida no projeto"],e:"Qualidade = atender requisitos funcionais e de desempenho, padrões de desenvolvimento e o que se espera de software profissional. Sem requisito atendido, não há qualidade."},
+{t:"Processo",q:"Em que momento a qualidade deve ser incorporada ao software?",o:["Ao longo de todo o processo de desenvolvimento","Somente na fase de testes","Depois da entrega, durante a manutenção","Apenas na fase de projeto"],e:"Os slides são claros: qualidade não pode ser incorporada depois do produto pronto. Ela é objetivo constante do processo; todas as fases afetam a qualidade final."},
+{t:"Processo",q:"O FrequênciaFácil precisa ser alterado para cumprir uma nova lei de proteção de dados. Que tipo de manutenção é essa?",o:["Adaptativa","Corretiva","Perfectiva","Preventiva"],e:"Adaptativa = adaptar a novas tecnologias, metodologias ou legislação. Corretiva corrige defeitos, perfectiva adiciona funções, preventiva melhora a manutenibilidade futura."},
+{t:"Processo",q:"Adicionar ao FrequênciaFácil um relatório de frequência por período é uma manutenção:",o:["Perfectiva","Corretiva","Adaptativa","Preventiva"],e:"Perfectiva = incluir novas funções (ampliações)."},
+{t:"Processo",q:"Um aluno não aparecia no histórico por causa de um erro na consulta SQL, e a equipe corrigiu. Que manutenção foi feita?",o:["Corretiva","Perfectiva","Adaptativa","Preventiva"],e:"Corretiva = corrigir defeitos (erros latentes)."},
+{t:"Processo",q:"Sobre a norma NBR ISO/IEC 12207, é correto afirmar:",o:["Organiza os processos de ciclo de vida em fundamentais, de apoio e organizacionais, sem dizer como executá-los","Impõe o modelo cascata a todas as empresas","É um modelo de maturidade com níveis, igual ao CMMI","Substitui o Scrum em projetos ágeis"],e:"A 12207 dá uma estrutura comum de processos (fundamentais, de apoio, organizacionais). Ela não especifica como implementar nem determina modelo de ciclo de vida, e deve ser adaptada."},
+{t:"Processo",q:"Na ISO/IEC 12207, Documentação, Garantia de Qualidade, Verificação e Validação são processos:",o:["De apoio","Fundamentais","Organizacionais","De aquisição"],e:"Fundamentais: aquisição, fornecimento, desenvolvimento, operação, manutenção. De apoio: documentação, configuração, qualidade, verificação, validação, revisão, auditoria, resolução de problemas. Organizacionais: gerência, melhoria, infraestrutura, treinamento."},
+{t:"Processo",q:"Na Engenharia de Software, o elo entre métodos e ferramentas, que define a sequência, os produtos a entregar, os controles e os marcos, são os:",o:["Procedimentos","Requisitos","Testes","Ferramentas CASE"],e:"Eng. de Software = métodos (como fazer) + ferramentas (apoio automatizado, CASE) + procedimentos (o elo: sequência, entregáveis, controles, marcos), tendo a qualidade como base."},
+{t:"Processo",q:"Quais são modelos de avaliação e melhoria de processo citados na matéria?",o:["CMMI-Dev, PSP e MPS.Br","Scrum, XP e Kanban","Cascata, Espiral e RAD","Jenkins, Selenium e Nagios"],e:"CMMI-Dev, PSP e MPS.Br avaliam a maturidade do processo. Scrum/XP/Kanban são métodos ágeis; Cascata/Espiral/RAD são modelos de processo; os últimos são ferramentas DevOps."},
+{t:"Processo",q:"Nas fases genéricas do desenvolvimento, a fase de Definição responde principalmente:",o:["O QUÊ o software deve fazer","COMO o software será codificado","COMO corrigir erros após a entrega","QUANDO o sistema será desativado"],e:"Definição = o quê (análise, planejamento, requisitos). Construção = como (projeto, código, testes). Manutenção = modificações após a entrega."},
+
+// ---------- MODELOS ----------
+{t:"Modelos",q:"Qual é o principal problema do modelo Cascata?",o:["Exige todos os requisitos no início e o cliente só vê uma versão executável no fim","Não tem nenhuma fase de testes","Depende de análise de risco em cada ciclo","Descarta o produto ao final de cada iteração"],e:"No Cascata, projetos reais raramente seguem o fluxo sequencial, é difícil definir tudo no começo e o cliente precisa ter paciência, pois o software só fica pronto no final."},
+{t:"Modelos",q:"Na Prototipação, depois que os requisitos são identificados, o protótipo deve ser:",o:["Descartado, e a versão de produção construída com critérios de qualidade","Entregue como produto final ao cliente","Transformado em documentação","Mantido como ambiente de produção"],e:"O protótipo serve para descobrir requisitos. Um risco clássico é o cliente querer usá-lo como produto final, mas ele deve ser descartado."},
+{t:"Modelos",q:"Qual elemento o modelo Espiral acrescenta aos modelos Cascata e Prototipação?",o:["Análise de risco","Geração automática de código","Daily Scrum","Implantação contínua"],e:"Espiral = passos do Cascata em estrutura iterativa + prototipação + análise de risco em cada volta."},
+{t:"Modelos",q:"Qual modelo está representado?",d:"        1. PLANEJAMENTO          2. ANÁLISE DE RISCOS\n   (objetivos, alternativas,   (avaliar alternativas,\n         restrições)              resolver riscos)\n                 \\                /\n                  \\   ( volta )  /\n                  /  cada volta  \\\n                 /   = uma fase   \\\n   4. AVALIAÇÃO DO CLIENTE      3. CONSTRUÇÃO\n   (decidir se continua)    (produto no nível seguinte)",o:["Espiral","Cascata","RAD","Incremental"],e:"Quatro quadrantes que se repetem em voltas, com análise de risco e avaliação do cliente: é o modelo Espiral."},
+{t:"Modelos",q:"O modelo RAD (Rapid Application Development) se caracteriza por:",o:["Ciclo muito curto (60 a 90 dias), reuso de componentes e equipes por módulo","Fases longas e sequenciais com muita documentação","Construção de um protótipo descartável","Análise de risco a cada volta da espiral"],e:"RAD é iterativo e incremental, com ciclo extremamente curto, componentes reutilizáveis e uma equipe por módulo. Exige requisitos bem entendidos e sistema modularizável."},
+{t:"Modelos",q:"Em qual situação o RAD tende a NÃO funcionar?",o:["Quando o sistema não pode ser modularizado e depende de alto desempenho ajustando interfaces","Quando os requisitos estão bem entendidos","Quando o escopo é restrito","Quando é um sistema de informação"],e:"Os slides dizem que o RAD exige modularização efetiva; se o desempenho depende de afinar interfaces entre componentes, ele pode não funcionar."},
+{t:"Modelos",q:"No modelo Incremental, a versão inicial normalmente é:",o:["O núcleo do produto, a parte mais importante","Um protótipo descartável","A documentação completa do sistema","A versão final com todas as funções"],e:"O Incremental combina o Cascata aplicado repetidamente com a filosofia iterativa. A primeira versão é o núcleo e as próximas adicionam funções."},
+{t:"Modelos",q:"O FrequênciaFácil foi entregue em 2 sprints: primeiro a base e o CRUD de alunos, depois presença, histórico e deploy. Isso se aproxima mais de qual abordagem?",o:["Incremental e iterativa (ágil)","Cascata","Prototipação descartável","Técnicas de 4ª geração"],e:"Cada sprint entregou uma parte funcionando sobre a anterior: desenvolvimento incremental e iterativo, como prega o ágil."},
+{t:"Modelos",q:"Técnicas de 4ª Geração (4GL) se concentram em:",o:["Especificar o software em alto nível, próximo da linguagem natural, e gerar o código automaticamente","Testar o software no navegador de forma automática","Gerenciar sprints e backlog","Analisar riscos a cada iteração"],e:"4GL: especificação em linguagem de alto nível e geração automática do código-fonte."},
+{t:"Modelos",q:"Modelos evolutivos (como Incremental e Espiral) são indicados quando:",o:["Os requisitos mudam durante o desenvolvimento ou o prazo é apertado","Todos os requisitos são conhecidos e estáveis desde o início","Não há participação do cliente","O sistema será desenvolvido de uma só vez"],e:"Evolutivos são iterativos e produzem versões cada vez mais completas, úteis com requisitos que mudam ou prazos de mercado."},
+
+// ---------- ÁGIL ----------
+{t:"Ágil",q:"Qual destes é um valor do Manifesto Ágil?",o:["Software funcionando mais que documentação abrangente","Processos e ferramentas mais que indivíduos e interações","Seguir um plano mais que responder a mudanças","Negociação de contratos mais que colaboração com o cliente"],e:"Os 4 valores: indivíduos e interações; software funcionando; colaboração com o cliente; responder a mudanças. As outras opções estão invertidas."},
+{t:"Ágil",q:"Segundo os princípios ágeis, qual é a medida primária de progresso?",o:["Software funcionando","Quantidade de documentos entregues","Número de linhas de código","Horas trabalhadas pela equipe"],e:"Princípio 7: software funcional é a medida primária de progresso."},
+{t:"Ágil",q:"Metodologias ágeis são mais recomendadas para projetos com:",o:["Requisitos que mudam, equipe pequena e prazo curto","Requisitos fixos, equipe grande e contrato rígido","Nenhum contato com o cliente","Documentação completa exigida antes do código"],e:"Ágil: muitas mudanças, requisitos alteráveis, equipe pequena, entregas curtas, desenvolvimento rápido."},
+{t:"Ágil",q:"O Manifesto Ágil foi assinado em:",o:["2001, por Kent Beck e outros 16 profissionais","1997, pela OMG","1990, pelo IEEE","2010, por Pressman"],e:"Em 2001, Kent Beck e mais 16 desenvolvedores da Aliança Ágil assinaram o manifesto."},
+{t:"Ágil",q:"No manifesto ágil, \"simplicidade\" é definida como:",o:["A arte de maximizar a quantidade de trabalho que não precisou ser feito","Escrever o mínimo de testes possível","Usar apenas uma linguagem de programação","Não ter reuniões"],e:"Princípio 10: simplicidade, a arte de maximizar o trabalho não realizado."},
+{t:"Ágil",q:"Por que as metodologias ágeis surgiram?",o:["Modelos tradicionais tinham muita documentação, iterações longas e pouca participação do cliente, gerando retrabalho","Porque o Cascata não tinha fase de manutenção","Para substituir a UML","Porque não existiam ferramentas de versionamento"],e:"O mercado passou a exigir sistemas complexos com requisitos mutáveis, e os modelos tradicionais geravam problemas e retrabalho."},
+{t:"Ágil",q:"Qual destes NÃO é uma metodologia/abordagem ágil citada na matéria?",o:["Cascata","XP","Kanban","FDD"],e:"Cascata é um modelo clássico (tradicional). XP, Kanban, FDD, Scrum, Crystal, DSDM, TDD, BDD e DevOps aparecem como ágeis."},
+
+// ---------- SCRUM ----------
+{t:"Scrum",q:"No Scrum, quem é responsável por manter e priorizar o Product Backlog?",o:["Product Owner","Scrum Master","Scrum Team","Cliente final"],e:"O PO é o dono do produto, domina as regras de negócio e mantém o Product Backlog. No projeto, esse papel foi do Canducci."},
+{t:"Scrum",q:"Qual é o papel do Scrum Master?",o:["Orientar o time e garantir que os princípios do Scrum sejam seguidos, como um coach","Definir sozinho as prioridades do produto","Programar as funcionalidades mais difíceis","Aprovar o orçamento do projeto"],e:"Scrum Master age como coach. Não é chefe nem dono do backlog."},
+{t:"Scrum",q:"Quais são os três pilares do Scrum?",o:["Transparência, Inspeção e Adaptação","Comunicação, Colaboração e Automação","Planejamento, Codificação e Teste","Requisitos, Projeto e Manutenção"],e:"Transparência (requisitos e status visíveis), Inspeção (acompanhamento) e Adaptação (gestão de mudanças). Comunicação/colaboração/automação são pilares do DevOps."},
+{t:"Scrum",q:"Na Daily Scrum, cada integrante responde:",o:["O que fiz ontem? O que farei hoje? Há algum obstáculo?","Qual o orçamento? Qual o prazo? Qual o risco?","O que deu certo? O que deu errado? O que melhorar?","Quem é o cliente? O que ele quer? Por quê?"],e:"Daily: reunião de cerca de 15 minutos, sempre no mesmo horário, com as três perguntas. As perguntas sobre o que deu certo e o que melhorar são da Retrospectiva."},
+{t:"Scrum",q:"Em qual evento o incremento é demonstrado às partes interessadas e o PO decide se ele será lançado?",o:["Sprint Review","Sprint Planning","Daily Scrum","Sprint Retrospective"],e:"Na Sprint Review o time mostra o que foi concluído; o PO pode decidir lançar ou não, e mudanças voltam ao backlog por prioridade."},
+{t:"Scrum",q:"A reunião em que o time discute o que funcionou e o que precisa melhorar para a próxima sprint é a:",o:["Sprint Retrospective","Sprint Review","Sprint Planning","Daily Scrum"],e:"Retrospectiva: foco no processo, pessoas e ferramentas, para melhorar a próxima sprint."},
+{t:"Scrum",q:"O Sprint Backlog é:",o:["O conjunto de itens do Product Backlog escolhidos para a sprint atual","A lista completa de requisitos do produto","O gráfico de trabalho restante","A parte do produto entregue ao final"],e:"Sprint Backlog = itens derivados do Product Backlog (histórias e bugs) que serão feitos no ciclo. A lista completa é o Product Backlog; o entregue é o Incremento."},
+{t:"Scrum",q:"O que é o Incremento no Scrum?",o:["A parte do produto concluída e entregue ao final de uma sprint","A reunião diária de 15 minutos","O aumento do número de pessoas no time","A lista de impedimentos"],e:"Incremento = entrega das tarefas concluídas na sprint, mesmo que o projeto ainda não esteja terminado."},
+{t:"Scrum",q:"O Burndown Chart mostra:",o:["Os itens restantes em relação ao tempo da sprint","A quantidade de bugs por desenvolvedor","O custo do projeto por mês","A ordem de prioridade do backlog"],e:"Burndown: linha ideal x andamento real do trabalho restante ao longo do tempo."},
+{t:"Scrum",q:"Qual a duração usual de uma sprint?",o:["2 a 4 semanas","1 dia","6 meses","1 ano"],e:"Geralmente 2 a 4 semanas, podendo aumentar para incrementos de maior valor."},
+{t:"Scrum",q:"No FrequênciaFácil, o quadro do Trello com colunas Product Backlog, Sprint Backlog, Em Desenvolvimento, Em Revisão, Em Teste e Concluído é um exemplo de:",o:["Kanban","Burndown Chart","Diagrama de atividades","Matriz SIPOC"],e:"Kanban é o quadro que mostra o fluxo de trabalho (a fazer, fazendo, pronto), em software como Trello ou Jira, ou num quadro físico."},
+
+// ---------- HISTÓRIA DE USUÁRIO ----------
+{t:"História de usuário",q:"Qual é o formato padrão de uma história de usuário?",o:["Como [papel], quero [ação], para que [benefício]","Se [condição], então [resultado], senão [alternativa]","Dado [contexto], o sistema [executa]","Ator, caso de uso e extensão"],e:"Como / quero / para que: captura quem, o quê e por quê."},
+{t:"História de usuário",q:"Histórias de usuário capturam principalmente:",o:["Quem, o quê e por quê de um requisito","Como o código deve ser implementado","A arquitetura do banco de dados","O cronograma e o orçamento"],e:"É uma técnica de requisitos concisa, na visão do usuário, que cabe num cartão."},
+{t:"História de usuário",q:"As histórias de usuário se originaram em qual metodologia?",o:["XP (Extreme Programming)","Cascata","RAD","Espiral"],e:"Vieram do XP, cuja primeira descrição (1998) dizia que os clientes definem o escopo com histórias de usuário."},
+{t:"História de usuário",q:"Qual destas é uma história de usuário bem escrita para o FrequênciaFácil?",o:["Como professor, quero consultar o histórico de presença de um aluno, para acompanhar a frequência dele","Criar a tabela presenca no MySQL com chave estrangeira","O sistema deve usar PHP 8.3 e Docker","Colocar um botão azul na tela de alunos"],e:"Só a primeira tem papel, ação e benefício na visão do usuário (é a US03). As outras são tarefas técnicas ou detalhes de interface."},
+{t:"História de usuário",q:"Quem pode escrever histórias de usuário para requisitos NÃO funcionais (segurança, desempenho)?",o:["Os desenvolvedores também podem","Somente o cliente","Somente o Scrum Master","Ninguém, histórias são só para requisitos funcionais"],e:"Normalmente são escritas por ou para usuários, mas desenvolvedores podem escrevê-las para requisitos não funcionais."},
+
+// ---------- DEVOPS ----------
+{t:"DevOps",q:"DevOps é melhor definido como:",o:["Uma cultura que aproxima desenvolvimento (Dev) e operação (Ops), com práticas e ferramentas de automação e monitoramento","Uma linguagem de programação para servidores","Um modelo de processo sequencial como o Cascata","Um tipo de diagrama UML"],e:"DevOps combina filosofia cultural, práticas e ferramentas para entregar em alta velocidade, aproximando Dev e Ops."},
+{t:"DevOps",q:"Qual pilar é chamado de \"coração do DevOps\"?",o:["Automação","Comunicação","Colaboração","Monitoração"],e:"A automação permite ambientes estáveis e lançamentos consistentes. Os 4 pilares são comunicação, colaboração, automação e monitoração."},
+{t:"DevOps",q:"Quais são os 4 pilares do DevOps?",o:["Comunicação, Colaboração, Automação e Monitoração","Transparência, Inspeção, Adaptação e Entrega","Plan, Code, Build e Test","Requisitos, Projeto, Código e Testes"],e:"Comunicação, Colaboração, Automação, Monitoração. Transparência/Inspeção/Adaptação são do Scrum."},
+{t:"DevOps",q:"Qual é a ordem correta das etapas do ciclo DevOps?",o:["Plan, Code, Build, Test, Release, Deploy, Operate, Monitor","Code, Plan, Test, Build, Deploy, Release, Monitor, Operate","Plan, Test, Code, Deploy, Build, Release, Operate, Monitor","Build, Code, Plan, Release, Test, Deploy, Monitor, Operate"],e:"Planejar, codificar, construir, testar, liberar, implantar, operar, monitorar."},
+{t:"DevOps",q:"Integração Contínua (CI) é:",o:["Integrar mudanças com frequência ao código principal, com build e testes automáticos","Publicar automaticamente em produção sem aprovação","Monitorar o servidor 24 horas","Fazer reuniões diárias com o time de operações"],e:"CI consolida mudanças num ramo compartilhado com frequência e valida com build e testes automatizados (unidade e integração)."},
+{t:"DevOps",q:"Este pipeline representa qual prática?",d:"push na main\n    │\n    ▼\n[ CI: build + testes automáticos ]\n    │ passou\n    ▼\n[ testes de aceitação em pré-produção ]\n    │\n    ▼\n( APROVAÇÃO MANUAL )  ← alguém libera\n    │\n    ▼\n[ PRODUÇÃO ]",o:["Continuous Delivery (Entrega Contínua)","Continuous Deployment (Implantação Contínua)","Apenas Integração Contínua","Modelo Cascata"],e:"Entrega Contínua deixa o código sempre pronto para produção, mas a ida para produção depende de aprovação manual. Sem essa etapa manual seria Implantação Contínua."},
+{t:"DevOps",q:"A diferença da Implantação Contínua (Continuous Deployment) em relação à Entrega Contínua é que:",o:["Na implantação contínua tudo vai para produção automaticamente, sem intervenção manual","Na implantação contínua não há testes","A implantação contínua só gera documentação","Não há diferença, são sinônimos"],e:"Mesmo objetivo, mas na implantação contínua não há etapa manual antes da produção, por isso ela depende de testes automatizados muito bons."},
+{t:"DevOps",q:"Qual ferramenta é usada principalmente para testes automatizados de aplicações web no navegador?",o:["Selenium","Jenkins","Nagios","Jira"],e:"Selenium = Test. Jenkins = Build/CI. Nagios = Monitor. Jira = Plan."},
+{t:"DevOps",q:"Jenkins é usado principalmente em qual etapa?",o:["Build/CI (automação de builds, testes e publicação)","Planejamento de sprints","Monitoramento de infraestrutura","Modelagem UML"],e:"Jenkins é um servidor de CI/CD open source com muitos plugins. No projeto, esse papel foi do GitHub Actions."},
+{t:"DevOps",q:"Docker serve para:",o:["Empacotar a aplicação com suas dependências em containers que rodam igual em qualquer ambiente","Orquestrar e escalar centenas de containers automaticamente","Monitorar a CPU e a memória do servidor","Gerenciar histórias de usuário"],e:"Docker = plataforma de conteinerização. Orquestrar e escalar é o Kubernetes; monitorar é Nagios/Netdata."},
+{t:"DevOps",q:"Kubernetes é uma plataforma para:",o:["Implantar, escalar e gerenciar containers (rollouts, load balance, autoescala)","Escrever testes unitários","Versionar código-fonte","Desenhar diagramas de sequência"],e:"Kubernetes orquestra containers: alta disponibilidade, autoescalabilidade, balanceamento."},
+{t:"DevOps",q:"No FrequênciaFácil, o endpoint /health, o Netdata e o fail2ban pertencem a qual etapa do DevOps?",o:["Monitor","Plan","Code","Build"],e:"Monitor é a etapa final: garantir que infraestrutura, sistemas e aplicações estejam funcionando sem problemas."},
+{t:"DevOps",q:"No FrequênciaFácil, o CD só roda depois que o CI passa na main. Qual o principal benefício?",o:["Evitar que código quebrado chegue à produção","Dispensar a revisão de pull requests","Eliminar a necessidade de monitoramento","Deixar o deploy manual"],e:"Se o CI falha, nada é publicado. É o portão de qualidade antes da produção."},
+{t:"DevOps",q:"Qual ferramenta corresponde à etapa Plan no DevOps?",o:["Jira (ou Trello)","Selenium","Docker","Nagios"],e:"Jira é pensado para Scrum/Kanban: gerenciar projeto e tarefas. No projeto, usamos o Trello."},
+{t:"DevOps",q:"Qual NÃO é um benefício do DevOps citado na matéria?",o:["Eliminar a necessidade de testes","Velocidade","Confiabilidade","Colaboração melhorada"],e:"Benefícios: velocidade, entrega rápida, confiabilidade, escala, colaboração, segurança. DevOps depende de testes, especialmente automatizados."},
+
+// ---------- UML ----------
+{t:"UML",q:"Sobre a UML, é correto afirmar:",o:["É uma linguagem para especificar, visualizar, construir e documentar sistemas; não é um processo nem uma metodologia","É uma metodologia ágil como o Scrum","É um modelo de processo como o Cascata","É uma ferramenta de CI/CD"],e:"UML é linguagem de modelagem (padrão OMG desde 1997, versão 2.5) e pode ser usada com qualquer processo."},
+{t:"UML",q:"Qual destes é um diagrama ESTRUTURAL?",o:["Diagrama de Classes","Diagrama de Sequência","Diagrama de Atividades","Diagrama de Casos de Uso"],e:"Estruturais: classes, objetos, componentes, implantação, pacotes, estrutura composta, perfil. Sequência, atividades e casos de uso são comportamentais."},
+{t:"UML",q:"Qual destes é um diagrama COMPORTAMENTAL?",o:["Diagrama de Máquina de Estados","Diagrama de Componentes","Diagrama de Pacotes","Diagrama de Implantação"],e:"Comportamentais: casos de uso, atividades, máquina de estados e os de interação (sequência, comunicação, tempo, visão geral)."},
+{t:"UML",q:"O diagrama de Sequência dá ênfase à _____, enquanto o de Comunicação dá ênfase à _____.",o:["ordem temporal das mensagens / organização estrutural dos objetos","organização estrutural / ordem temporal","estrutura das classes / fluxo de atividades","estados de um objeto / componentes do sistema"],e:"Ambos são diagramas de interação. Sequência = tempo (de cima para baixo). Comunicação = como os objetos estão ligados."},
+{t:"UML",q:"No diagrama abaixo, o que representa a seta tracejada \"- - ok - ->\"?",d:"Professor     :TelaPresenca     :Controlador        :Banco\n   |               |                  |                  |\n   | marcar()      |                  |                  |\n   |-------------->|                  |                  |\n   |               | salvar(data)     |                  |\n   |               |----------------->|                  |\n   |               |                  | gravar()         |\n   |               |                  |----------------->|\n   |               |                  |<- - - ok - - - - |\n   |               |<- - confirma - - |                  |\n   |               |                  |                  |",o:["Uma mensagem de retorno (resposta)","Uma mensagem assíncrona de criação de objeto","Uma decisão condicional","O fim da linha de vida do objeto"],e:"Retornos podem ser mostrados com uma linha tracejada no fim da barra de ativação, ou com a sintaxe var = mensagem(arg)."},
+{t:"UML",q:"No diagrama de sequência abaixo, a mensagem salvar(data) se torna um método de qual objeto?",d:":TelaPresenca          :Controlador\n      |                      |\n      |   salvar(data)       |\n      |--------------------->|\n      |                      |",o:[":Controlador, o objeto que recebe a mensagem",":TelaPresenca, o objeto que envia","Dos dois objetos ao mesmo tempo","De nenhum, mensagens não viram métodos"],e:"Cada mensagem vira um método do objeto/classe que a recebe."},
+{t:"UML",q:"Em um diagrama de sequência, uma moldura \"loop\" com uma guarda [enquanto houver alunos] representa:",o:["Iteração (repetição de mensagens)","Uma mensagem para o próprio objeto","Um caminho mutuamente exclusivo","A criação de um objeto"],e:"Moldura loop com expressão booleana = iteração. Mensagem condicional usa guarda entre colchetes [ ]."},
+{t:"UML",q:"Que diagrama é este e o que o losango representa?",d:"        ●\n        │\n  [ Escolher data da aula ]\n        │\n  [ Marcar presentes/ausentes ]\n        │\n        ◇  já existe registro aluno + data?\n      /   \\\n   sim     não\n    │       │\n[Atualizar] [Inserir]\n      \\   /\n        │\n  [ Mostrar confirmação ]\n        │\n        ◉",o:["Diagrama de Atividades; o losango é uma decisão","Diagrama de Sequência; o losango é uma mensagem de retorno","Diagrama de Classes; o losango é uma herança","Diagrama de Estados; o losango é o estado final"],e:"Diagrama de atividades mostra o fluxo de uma atividade para outra: ● início, ◉ fim, retângulos arredondados são ações e o losango é decisão (ou junção)."},
+{t:"UML",q:"O diagrama de Atividades é usado para representar:",o:["Fluxo de trabalho, lógica de procedimento e processos de negócio","A troca de mensagens ordenada no tempo entre objetos","As classes e seus relacionamentos","Os estados que um objeto assume na vida"],e:"Atividades = fluxo de controle de uma atividade para outra. Já os diagramas de interação enfatizam o fluxo de um objeto para outro."},
+{t:"UML",q:"Qual diagrama representaria a VPS do FrequênciaFácil com Nginx, o container da aplicação PHP e o container MySQL?",o:["Diagrama de Implantação","Diagrama de Casos de Uso","Diagrama de Sequência","Diagrama de Atividades"],e:"Implantação (ou utilização) mostra a organização dos elementos do sistema para sua execução: nós, servidores, containers."},
+{t:"UML",q:"O Diagrama de Casos de Uso representa:",o:["Os comportamentos de alto nível que o sistema executa para um ator","A sequência temporal de mensagens","A estrutura interna de um componente","O banco de dados físico"],e:"É o diagrama mais simples, sem grande detalhamento. Ex.: ator Professor com os casos Cadastrar aluno, Registrar presença, Consultar histórico."},
+{t:"UML",q:"Polimorfismo é:",o:["Subclasses de uma mesma superclasse responderem à mesma operação (mesma assinatura) com comportamentos diferentes","Uma classe ter vários atributos","Um objeto enviar uma mensagem para si mesmo","Um diagrama mostrar vários atores"],e:"Ex.: Pagamento abstrato com autorizar() implementado de formas diferentes em cada subclasse."},
+{t:"UML",q:"A matriz SIPOC, usada no mapeamento de processos, organiza:",o:["Fornecedores, Entradas, Processo, Saídas e Clientes","Sprint, Incremento, Product Owner e Cerimônias","Segurança, Infraestrutura, Performance, Operação e Código","Sequência, Interação, Pacotes, Objetos e Classes"],e:"SIPOC = Suppliers, Inputs, Process, Outputs, Customers. Visão geral rápida do processo, em formato de planilha."},
+{t:"UML",q:"Qual técnica de mapeamento de processos é a mais usada internacionalmente e usa piscinas e raias (swimlanes)?",o:["BPMN","Mapofluxograma","Fluxograma simples","Diagrama de Classes"],e:"BPMN: símbolos padronizados, com objetos de fluxo, de conexão, swimlanes, artefatos e objetos de dados."},
+{t:"UML",q:"Na fase de ANÁLISE da Análise e Projeto OO, produzem-se principalmente:",o:["Casos de uso, diagramas de atividades e modelo conceitual","Diagramas de classes de projeto e mapeamento objeto-relacional","Código-fonte e testes unitários","Scripts de deploy"],e:"Análise: requisitos, casos de uso, atividades, modelo conceitual. Projeto: interação (sequência/comunicação), classes, pacotes, mapeamento objeto-relacional."}
+];
+
+// ---------- estado ----------
+const TOPICS=[...new Set(BANK.map(x=>x.t))];
+const SIZES=[10,25,"Todas"];
+let selTopics=new Set(TOPICS), selSize=25, run=[], i=0, picked=-1, answers=[];
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]]}return a};
+
+function renderStart(){
+  $("topics").innerHTML="";
+  TOPICS.forEach(t=>{const b=document.createElement("button");b.className="chip";b.textContent=t+" ("+BANK.filter(x=>x.t===t).length+")";
+    b.setAttribute("aria-pressed",selTopics.has(t));b.onclick=()=>{selTopics.has(t)?selTopics.delete(t):selTopics.add(t);renderStart()};$("topics").appendChild(b)});
+  $("sizes").innerHTML="";
+  SIZES.forEach(s=>{const b=document.createElement("button");b.className="chip";b.textContent=s;b.setAttribute("aria-pressed",selSize===s);
+    b.onclick=()=>{selSize=s;renderStart()};$("sizes").appendChild(b)});
+  const n=BANK.filter(x=>selTopics.has(x.t)).length;
+  $("avail").textContent=n?n+" questões disponíveis nos assuntos escolhidos.":"Escolha pelo menos um assunto.";
+  $("go").disabled=!n;
+}
+function build(pool){
+  return pool.map(x=>{const idx=shuffle([0,1,2,3]);return {...x,opts:idx.map(k=>x.o[k]),ans:idx.indexOf(0)}});
+}
+function begin(pool){
+  run=pool;i=0;answers=[];
+  show("quiz");renderQ();
+}
+function startNew(){
+  let pool=shuffle(BANK.filter(x=>selTopics.has(x.t)));
+  // garante questões com diagrama no simulado quando possível
+  const n=selSize==="Todas"?pool.length:Math.min(selSize,pool.length);
+  const diag=pool.filter(x=>x.d), rest=pool.filter(x=>!x.d);
+  let pick=diag.slice(0,Math.min(2,n)); pick=pick.concat(rest.slice(0,n-pick.length));
+  if(pick.length<n) pick=pick.concat(diag.slice(2,2+n-pick.length));
+  begin(build(shuffle(pick)));
+}
+function show(id){["start","quiz","result"].forEach(s=>$(s).hidden=s!==id);window.scrollTo({top:0,behavior:"smooth"})}
+function renderQ(){
+  const q=run[i];picked=-1;
+  $("qtopic").textContent=q.t;
+  $("qcount").textContent="Questão "+(i+1)+" de "+run.length;
+  $("qbar").style.width=(i/run.length*100)+"%";
+  $("qtext").textContent=q.q;
+  $("qdiag").hidden=!q.d; $("qdiag").textContent=q.d||"";
+  $("qopts").innerHTML="";
+  q.opts.forEach((o,k)=>{const b=document.createElement("button");b.className="opt";
+    b.innerHTML="<b>"+"ABCD"[k]+"</b><span></span>";b.querySelector("span").textContent=o;
+    b.onclick=()=>{picked=k;[...$("qopts").children].forEach((c,j)=>c.classList.toggle("sel",j===k));$("confirm").disabled=false};
+    $("qopts").appendChild(b)});
+  $("qexp").hidden=true;$("confirm").hidden=false;$("confirm").disabled=true;$("next").hidden=true;
+}
+function confirmQ(){
+  if(picked<0)return;
+  const q=run[i],ok=picked===q.ans;
+  answers.push({q,picked,ok});
+  [...$("qopts").children].forEach((c,j)=>{c.disabled=true;c.classList.remove("sel");if(j===q.ans)c.classList.add("right");else if(j===picked)c.classList.add("wrong")});
+  const ex=$("qexp");ex.hidden=false;ex.className="exp "+(ok?"ok":"no");
+  ex.innerHTML="<strong></strong> <span></span>";
+  ex.querySelector("strong").textContent=ok?"Acertou.":"Errou. Correta: "+"ABCD"[q.ans]+".";
+  ex.querySelector("span").textContent=q.e;
+  $("confirm").hidden=true;$("next").hidden=false;
+  $("next").textContent=i===run.length-1?"Ver resultado →":"Próxima →";
+  $("qbar").style.width=((i+1)/run.length*100)+"%";
+  $("next").focus();
+}
+function nextQ(){ if(i<run.length-1){i++;renderQ();window.scrollTo({top:0,behavior:"smooth"})} else finish() }
+function finish(){
+  if(!answers.length){show("start");renderStart();return}
+  const hit=answers.filter(a=>a.ok).length,tot=answers.length,pct=Math.round(hit/tot*100);
+  $("rscore").textContent=hit+"/"+tot;
+  $("rpct").textContent=pct+"% de acerto";
+  $("rmsg").textContent=pct>=85?"Excelente, está pronto para a prova.":pct>=70?"Bom resultado. Revise os erros abaixo e faça mais uma rodada.":"Vale revisar o resumo nos assuntos com mais erros e refazer as erradas.";
+  const by={};answers.forEach(a=>{by[a.q.t]=by[a.q.t]||[0,0];by[a.q.t][1]++;if(a.ok)by[a.q.t][0]++});
+  $("rstats").innerHTML="";Object.entries(by).forEach(([t,[h,n]])=>{const d=document.createElement("div");d.className="stat";
+    d.innerHTML="<strong></strong><br><span class='muted'></span>";d.querySelector("strong").textContent=t;d.querySelector("span").textContent=h+" de "+n;$("rstats").appendChild(d)});
+  const errs=answers.filter(a=>!a.ok);
+  $("redo").hidden=!errs.length;
+  const box=$("rerrs");box.innerHTML="";
+  if(!errs.length){box.innerHTML="<p><strong>Nenhum erro.</strong> Gabaritou essa rodada.</p>"}
+  else{const h=document.createElement("h2");h.textContent="Revise os erros ("+errs.length+")";box.appendChild(h);
+    errs.forEach(a=>{const d=document.createElement("div");d.className="err";
+      d.innerHTML="<span class='tag'></span><strong></strong><span style='color:var(--bad)'></span><span style='color:var(--ok)'></span><span class='muted'></span>";
+      const s=d.children;s[0].textContent=a.q.t;s[1].textContent=a.q.q;s[2].textContent="Sua resposta: "+a.q.opts[a.picked];s[3].textContent="Correta: "+a.q.opts[a.q.ans];s[4].textContent=a.q.e;box.appendChild(d)})}
+  show("result");
+}
+$("go").onclick=startNew;
+$("confirm").onclick=confirmQ;
+$("next").onclick=nextQ;
+$("quit").onclick=finish;
+$("again").onclick=()=>{show("start");renderStart()};
+$("redo").onclick=()=>begin(build(shuffle(answers.filter(a=>!a.ok).map(a=>BANK.find(b=>b.q===a.q.q)))));
+renderStart();
+</script>
+
+</body>
+</html>

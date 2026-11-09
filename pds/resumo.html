@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Resumo de prova PDS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: uma página curta, coluna única, com o pipeline como lista de seis linhas */
+:root{
+  --bg:#f3f6f9; --surface:#ffffff; --surface2:#e9eef4; --fg:#142230; --muted:#4d6073; --line:#d3dce6;
+  --accent:#1f5fbf; --accent-soft:#dbe8fb; --ok:#17784a; --ok-soft:#dcf2e6;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Schibsted Grotesk","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1620; --surface:#15212d; --surface2:#1c2b3a; --fg:#e6eef6; --muted:#9db0c3; --line:#2a3b4d;
+  --accent:#6ea6f5; --accent-soft:#1b3050; --ok:#5fcf96; --ok-soft:#173a2b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1620; --surface:#15212d; --surface2:#1c2b3a; --fg:#e6eef6; --muted:#9db0c3; --line:#2a3b4d;
+  --accent:#6ea6f5; --accent-soft:#1b3050; --ok:#5fcf96; --ok-soft:#173a2b; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.55;
+  padding-block:40px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:36px}
+h1,h2{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,6vw,2.8rem);letter-spacing:-.02em}
+h2{font-size:1.35rem}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface2);padding:2px 6px;border-radius:5px}
+.label{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+section{display:flex;flex-direction:column;gap:14px}
+.thesis{background:var(--accent-soft);border-radius:14px;padding:18px 22px;font-family:var(--display);font-size:1.25rem;line-height:1.3}
+.flow{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.flow li{display:grid;grid-template-columns:120px minmax(0,1fr);gap:14px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.flow li:last-child{border-bottom:0}
+.flow b{font-family:var(--display);font-size:1.05rem}
+.flow span{color:var(--muted)}
+dl{margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+dt{font-weight:600}
+dd{margin:2px 0 0;color:var(--muted)}
+.box{background:var(--ok-soft);border-radius:12px;padding:14px 18px}
+ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.col{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.col b{font-family:var(--display)}
+.col span{color:var(--muted);font-size:.95rem}
+.story{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+@media (max-width:520px){.flow li{grid-template-columns:1fr;gap:2px}body{font-size:16px}}
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:.95rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface2);font-family:var(--display)}
+tr:last-child td{border-bottom:0}
+.tw{overflow-x:auto}
+.tw table{min-width:560px}
+.fp{background:var(--accent-soft);border-radius:12px;padding:12px 16px}
+.warn{background:#fdecc8;color:#3a2a00;border-radius:12px;padding:12px 16px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .warn{background:#3a2f12;color:#f6e3b0}}
+h3{font-family:var(--display);margin:6px 0 0;font-size:1.05rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a href="../" style="color:var(--accent);font-weight:600;text-decoration:none">← Início</a>
+<header style="display:flex;flex-direction:column;gap:12px">
+  <span class="label">Processo de Desenvolvimento de Software · Prof. Alisson Kuhn</span>
+  <h1>Resumo de prova</h1>
+  <div class="thesis">Processo bom gera software bom. Do cascata ao DevOps, a ideia é entregar com qualidade, mais rápido e com menos risco.</div>
+</header>
+
+<section>
+  <h2>1. Engenharia de software e processo</h2>
+  <ul>
+    <li><strong>Eng. de Software (IEEE):</strong> aplicação de uma abordagem <em>sistemática, disciplinada e quantificável</em> ao desenvolvimento, operação e manutenção.</li>
+    <li><strong>Qualidade (Pressman):</strong> conformidade a requisitos funcionais e de desempenho, a padrões documentados e a características implícitas esperadas. Falta de requisito atendido = falta de qualidade. <strong>Qualidade não se coloca depois, vem do processo.</strong></li>
+    <li><strong>Processo de software:</strong> conjunto de atividades, métodos, práticas e tecnologia. Define <em>quem faz o quê, quando e como</em>.</li>
+    <li><strong>Eng. de Software = qualidade + processo + métodos + ferramentas.</strong> Métodos = como fazer. Ferramentas = apoio (CASE). Procedimentos = elo entre métodos e ferramentas.</li>
+    <li><strong>Fases genéricas:</strong> Definição (o <em>quê</em>), Construção (o <em>como</em>: projeto, código, testes), Manutenção.</li>
+    <li><strong>4 manutenções:</strong> <em>corretiva</em> (defeitos), <em>adaptativa</em> (novo ambiente/lei), <em>perfectiva</em> (novas funções), <em>preventiva</em> (facilitar o futuro).</li>
+    <li><strong>ISO/IEC 12207:</strong> norma de ciclo de vida, 3 grupos de processos: <em>fundamentais</em> (aquisição, fornecimento, desenvolvimento, operação, manutenção), <em>de apoio</em> (documentação, qualidade, verificação, validação...) e <em>organizacionais</em> (gerência, melhoria, infraestrutura, treinamento). Não diz <em>como</em> fazer nem impõe modelo de ciclo de vida.</li>
+    <li><strong>Maturidade:</strong> CMMI-Dev, PSP, MPS.Br.</li>
+  </ul>
+  <div class="fp"><strong>No projeto:</strong> o pipeline (Trello, PR, CI, CD) é o nosso processo definindo quem faz o quê e em que ordem.</div>
+</section>
+
+<section>
+  <h2>2. Modelos de processo (clássicos)</h2>
+  <div class="tw"><table>
+    <tr><th>Modelo</th><th>Ideia</th><th>Problema / quando usar</th></tr>
+    <tr><td><b>Cascata</b></td><td>Sequencial linear: sistema, requisitos, projeto, código, testes, manutenção. Saída de uma fase é entrada da outra.</td><td>Requisitos raramente são todos conhecidos no início; cliente só vê software no fim.</td></tr>
+    <tr><td><b>Prototipação</b></td><td>Protótipo para entender requisitos; refina até o cliente aprovar. Depois o protótipo é <em>descartado</em>.</td><td>Cliente quer usar o protótipo como produto final; qualidade comprometida.</td></tr>
+    <tr><td><b>RAD</b></td><td>Ciclo curtíssimo (60 a 90 dias), componentes reutilizáveis, equipes por módulo. Fases: modelagem do negócio, dos dados, do processo, geração da aplicação, teste.</td><td>Exige requisitos bem entendidos, escopo restrito e sistema modularizável.</td></tr>
+    <tr><td><b>Incremental</b></td><td>Cascata repetido + filosofia iterativa. Versão inicial é o núcleo; novas funções entram em incrementos.</td><td>Bom quando é difícil detalhar tudo antes; ideal para sistemas pequenos.</td></tr>
+    <tr><td><b>Espiral</b></td><td>Cascata + prototipação + <strong>análise de risco</strong>. Ciclo: planejamento, análise de riscos, construção, avaliação do cliente.</td><td>Realista para sistemas grandes; exige experiência em riscos.</td></tr>
+    <tr><td><b>4GL</b></td><td>Especifica em alto nível e o código é gerado automaticamente.</td><td>Ferramentas de 4ª geração.</td></tr>
+  </table></div>
+  <p>Evolutivos (incremental, espiral) são <strong>iterativos</strong>: versões cada vez mais completas. A escolha do modelo depende da natureza do projeto, dos métodos/ferramentas e dos produtos a entregar.</p>
+  <div class="fp"><strong>No projeto:</strong> usamos <strong>incremental</strong> e ágil: 2 sprints, cada uma entrega uma parte funcionando (Sprint 1 a base e o CRUD, Sprint 2 presença, histórico e deploy).</div>
+</section>
+
+<section>
+  <h2>3. Metodologias ágeis</h2>
+  <ul>
+    <li><strong>Por que surgiram:</strong> os modelos tradicionais têm muita documentação, iterações longas e pouca participação do cliente, o que gera retrabalho.</li>
+    <li><strong>Manifesto Ágil (2001, Kent Beck e outros 16): 4 valores:</strong>
+      <ul>
+        <li>Indivíduos e interações <em>mais que</em> processos e ferramentas</li>
+        <li>Software funcionando <em>mais que</em> documentação abrangente</li>
+        <li>Colaboração do cliente <em>mais que</em> negociação de contratos</li>
+        <li>Responder a mudanças <em>mais que</em> seguir um plano</li>
+      </ul></li>
+    <li><strong>12 princípios, os principais:</strong> satisfazer o cliente com entrega contínua; aceitar mudanças até no fim; entregar software funcionando com frequência (semanas); negócio e devs juntos todo dia; <em>software funcionando é a medida de progresso</em>; simplicidade; times auto-organizáveis; reflexão regular para melhorar.</li>
+    <li><strong>Indicado quando:</strong> muita mudança, equipe pequena, prazo curto, desenvolvimento rápido é fundamental.</li>
+    <li><strong>Exemplos:</strong> XP, Scrum, Kanban, Crystal, FDD, DSDM, TDD, BDD, DevOps, Lean.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>4. Scrum</h2>
+  <p>Estrutura ágil de gestão de projetos (nome vem do rugby). <strong>3 pilares:</strong> Transparência, Inspeção, Adaptação.</p>
+  <div class="cols">
+    <div class="col"><b>Product Owner</b><span>Dono do produto. Domina o negócio, mantém e prioriza o Product Backlog.</span></div>
+    <div class="col"><b>Scrum Master</b><span>Coach do time. Garante que os princípios do Scrum sejam seguidos.</span></div>
+    <div class="col"><b>Scrum Team</b><span>Quem desenvolve a solução.</span></div>
+  </div>
+  <div class="tw"><table>
+    <tr><th>Artefato / Evento</th><th>O que é</th></tr>
+    <tr><td><b>Product Backlog</b></td><td>Lista dinâmica de tudo que o projeto precisa. Do PO.</td></tr>
+    <tr><td><b>Sprint Backlog</b></td><td>Itens do Product Backlog escolhidos para a sprint (histórias e bugs).</td></tr>
+    <tr><td><b>Incremento</b></td><td>Parte do produto concluída ao fim da sprint.</td></tr>
+    <tr><td><b>Sprint</b></td><td>Ciclo fixo, em geral 2 a 4 semanas.</td></tr>
+    <tr><td><b>Sprint Planning</b></td><td>Define a meta da sprint e gera o Sprint Backlog.</td></tr>
+    <tr><td><b>Daily Scrum</b></td><td>15 min por dia. Três perguntas: o que fiz ontem? o que farei hoje? há obstáculos?</td></tr>
+    <tr><td><b>Sprint Review</b></td><td>Demonstra o incremento às partes interessadas; o PO decide se libera.</td></tr>
+    <tr><td><b>Retrospectiva</b></td><td>Time discute o que funcionou e o que melhorar.</td></tr>
+    <tr><td><b>Burndown Chart</b></td><td>Gráfico de trabalho restante x tempo.</td></tr>
+    <tr><td><b>Kanban</b></td><td>Quadro de fluxo (a fazer, fazendo, pronto). Ex.: Trello, Jira.</td></tr>
+  </table></div>
+  <div class="fp"><strong>No projeto:</strong> Canducci = PO (backlog de 15 cards, prioridades, aceite). Vinicius = Scrum Master. Quadro Kanban no Trello com 6 colunas, 2 sprints (18 e 24 pontos) e Definition of Done.</div>
+</section>
+
+<section>
+  <h2>5. Histórias de usuário</h2>
+  <ul>
+    <li>Técnica de requisitos ágil que captura <strong>quem, o quê e por quê</strong>, de forma curta (cabe num cartão). Nasceu no XP.</li>
+    <li>Formato: <strong>Como</strong> [papel], <strong>quero</strong> [ação], <strong>para que</strong> [benefício].</li>
+    <li>Escritas pelo cliente/negócio; o gerente de produto garante que sejam capturadas. Devs podem escrever as de requisitos não funcionais (segurança, desempenho).</li>
+  </ul>
+  <div class="fp"><strong>No projeto (US02):</strong> "Como professor, quero marcar presente ou ausente cada aluno em uma data de aula, para controlar a frequência da turma." Com critérios de aceite (data padrão hoje, sem duplicar aluno na mesma data, confirmação ao salvar).</div>
+</section>
+
+<section>
+  <h2>6. DevOps</h2>
+  <ul>
+    <li><strong>Definição:</strong> cultura que aproxima <strong>Dev</strong> (desenvolvimento) e <strong>Ops</strong> (operação: sysadmin, DBA, redes, segurança), com práticas e ferramentas para entregar em alta velocidade e automatizar integração, teste, liberação e infraestrutura.</li>
+    <li><strong>Problemas que resolve:</strong> lentidão, gargalos, defeitos, mudança de escopo, prazo e custo.</li>
+    <li><strong>Benefícios:</strong> velocidade, entrega rápida, confiabilidade, escala, colaboração, segurança.</li>
+    <li><strong>4 pilares:</strong> <strong>Comunicação</strong>, <strong>Colaboração</strong>, <strong>Automação</strong> (o coração do DevOps) e <strong>Monitoração</strong>.</li>
+    <li><strong>8 etapas:</strong> Plan, Code, Build, Test, Release, Deploy, Operate, Monitor.</li>
+    <li><strong>Componentes do pipeline:</strong> Continuous Delivery, Deployment, Testing, Operations, Monitoring e Feedback.</li>
+  </ul>
+  <h3>CI x Entrega x Implantação (cai muito)</h3>
+  <div class="tw"><table>
+    <tr><th>Prática</th><th>O que faz</th></tr>
+    <tr><td><b>CI</b> Integração Contínua</td><td>Integra mudanças com frequência no código principal, com <strong>build e testes automáticos</strong> (unidade e integração).</td></tr>
+    <tr><td><b>Continuous Delivery</b> Entrega Contínua</td><td>Complementa a CI: deixa o código sempre pronto para produção, com testes de aceitação em pré-produção. <strong>A ida à produção depende de aprovação manual.</strong></td></tr>
+    <tr><td><b>Continuous Deployment</b> Implantação Contínua</td><td>Tudo automático até o usuário final, <strong>sem intervenção manual</strong>. Depende muito de testes automatizados bons.</td></tr>
+  </table></div>
+  <h3>Ferramentas citadas</h3>
+  <p>Plan: <strong>Jira</strong> (e Trello). Code: <strong>Git/GitHub</strong> (repositório, branches, commits, pull requests, issues). Build/CI: <strong>Jenkins</strong> (e GitHub Actions). Test: <strong>Selenium</strong>. Release/Deploy/Operate: <strong>Docker</strong> (containers empacotam app + dependências) e <strong>Kubernetes</strong> (orquestra containers). Monitor: <strong>Nagios</strong>.</p>
+  <div class="fp"><strong>No projeto:</strong> Trello (Plan), GitHub + PR (Code), GitHub Actions CI com 11 etapas e PHPUnit (Build/Test), Docker/Compose + imagem no GHCR (Release), CD por SSH na VPS (Deploy), Nginx/HTTPS (Operate), <code>/health</code> + Netdata + fail2ban (Monitor). Como o CD é automático após o CI, é "implantação contínua", mas com uma trava de liberação.</div>
+</section>
+
+<section>
+  <h2>7. UML e diagramas</h2>
+  <ul>
+    <li><strong>UML:</strong> linguagem padrão para <em>especificar, visualizar, construir e documentar</em> sistemas. <strong>Não é processo nem metodologia.</strong> Padrão OMG desde 1997 (Booch e Rumbaugh). Versão 2.5.</li>
+    <li><strong>Estruturais</strong> (o que o sistema <em>é</em>): classes, objetos, componentes, implantação, pacotes, estrutura composta, perfil.</li>
+    <li><strong>Comportamentais</strong> (o que o sistema <em>faz</em>): casos de uso, atividades, máquina de estados e os de interação (sequência, comunicação, tempo, visão geral).</li>
+    <li><strong>Análise:</strong> casos de uso, diagrama de atividades, modelo conceitual. <strong>Projeto:</strong> interação, classes, pacotes, mapeamento objeto-relacional.</li>
+  </ul>
+  <h3>Diagrama de Atividades</h3>
+  <p>Fluxo de atividades de um processo (lógica de procedimento, fluxo de trabalho, processo de negócio). Atividades ligadas por transições. Foca no fluxo de <em>atividade para atividade</em>. Mapeamento de processos também usa fluxograma, BPMN (raias/swimlanes) e SIPOC (fornecedor, entrada, processo, saída, cliente).</p>
+  <h3>Diagramas de Interação</h3>
+  <ul>
+    <li><strong>Sequência:</strong> ênfase na <em>ordem temporal</em> das mensagens entre objetos. Elementos: linha de vida, barra de ativação, mensagem (vira método do objeto que recebe), retorno tracejado, mensagem para si mesmo (reflexão), <em>loop</em> (iteração), guarda (condicional).</li>
+    <li><strong>Comunicação:</strong> ênfase na <em>organização estrutural</em> dos objetos.</li>
+    <li>Dependem de casos de uso e do modelo conceitual já prontos.</li>
+    <li><strong>Polimorfismo:</strong> subclasses respondem à mesma operação (mesma assinatura) com comportamentos diferentes.</li>
+  </ul>
+  <div class="fp"><strong>No projeto:</strong> um diagrama de sequência de "registrar presença": Professor, tela, controlador, banco (grava e atualiza se já existir para a data).</div>
+</section>
+
+<section>
+  <h2>Pegadinhas de prova</h2>
+  <ul>
+    <li>Cascata: cliente só vê o software no fim. Prototipação: o protótipo é descartado.</li>
+    <li>Espiral = o único com <strong>análise de risco</strong> explícita.</li>
+    <li>RAD exige modularização e requisitos claros.</li>
+    <li>Delivery tem aprovação manual; Deployment é 100% automático.</li>
+    <li>Scrum: o PO prioriza o backlog; o Scrum Master é coach, não chefe.</li>
+    <li>Automação é o "coração" do DevOps; DevOps é cultura, não só ferramenta.</li>
+    <li>UML não é metodologia; a ISO 12207 não diz <em>como</em> fazer.</li>
+    <li>Manifesto ágil: "mais que", não "no lugar de". Os itens da direita ainda têm valor.</li>
+  </ul>
+</section>
+<p style="color:var(--muted);font-size:.9rem">Baseado nos slides PDS 01 a 10 (Prof. Alisson Kuhn). Bons estudos e boa prova.</p>
+</div>
+
+</body>
+</html>
