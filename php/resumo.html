@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Resumo PHP</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: uma página curta, coluna única, com o pipeline como lista de seis linhas */
+:root{
+  --bg:#f3f6f9; --surface:#ffffff; --surface2:#e9eef4; --fg:#142230; --muted:#4d6073; --line:#d3dce6;
+  --accent:#1f5fbf; --accent-soft:#dbe8fb; --ok:#17784a; --ok-soft:#dcf2e6;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Schibsted Grotesk","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1620; --surface:#15212d; --surface2:#1c2b3a; --fg:#e6eef6; --muted:#9db0c3; --line:#2a3b4d;
+  --accent:#6ea6f5; --accent-soft:#1b3050; --ok:#5fcf96; --ok-soft:#173a2b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1620; --surface:#15212d; --surface2:#1c2b3a; --fg:#e6eef6; --muted:#9db0c3; --line:#2a3b4d;
+  --accent:#6ea6f5; --accent-soft:#1b3050; --ok:#5fcf96; --ok-soft:#173a2b; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.55;
+  padding-block:40px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:36px}
+h1,h2{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,6vw,2.8rem);letter-spacing:-.02em}
+h2{font-size:1.35rem}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface2);padding:2px 6px;border-radius:5px}
+.label{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+section{display:flex;flex-direction:column;gap:14px}
+.thesis{background:var(--accent-soft);border-radius:14px;padding:18px 22px;font-family:var(--display);font-size:1.25rem;line-height:1.3}
+.flow{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.flow li{display:grid;grid-template-columns:120px minmax(0,1fr);gap:14px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.flow li:last-child{border-bottom:0}
+.flow b{font-family:var(--display);font-size:1.05rem}
+.flow span{color:var(--muted)}
+dl{margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+dt{font-weight:600}
+dd{margin:2px 0 0;color:var(--muted)}
+.box{background:var(--ok-soft);border-radius:12px;padding:14px 18px}
+ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.col{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.col b{font-family:var(--display)}
+.col span{color:var(--muted);font-size:.95rem}
+.story{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+@media (max-width:520px){.flow li{grid-template-columns:1fr;gap:2px}body{font-size:16px}}
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:.95rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface2);font-family:var(--display)}
+tr:last-child td{border-bottom:0}
+.tw{overflow-x:auto}
+.tw table{min-width:560px}
+.fp{background:var(--accent-soft);border-radius:12px;padding:12px 16px}
+.warn{background:#fdecc8;color:#3a2a00;border-radius:12px;padding:12px 16px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .warn{background:#3a2f12;color:#f6e3b0}}
+h3{font-family:var(--display);margin:6px 0 0;font-size:1.05rem}
+pre{margin:0;font-family:var(--mono);font-size:.8rem;line-height:1.45;background:var(--surface2);border-radius:10px;padding:14px;overflow-x:auto;white-space:pre}
+code{font-family:var(--mono);font-size:.88em}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a href="../" style="color:var(--accent);font-weight:600;text-decoration:none">← Início</a>
+<header style="display:flex;flex-direction:column;gap:12px">
+  <span class="label">Linguagem de Programação PHP · Prova final</span>
+  <h1>Resumo de prova</h1>
+  <div class="thesis">O navegador pede, o Apache recebe, o PHP executa no servidor e devolve HTML ou JSON. O resto da matéria é como organizar esse caminho.</div>
+</header>
+
+<section>
+  <h2>1. Servidor Apache e requisições HTTP</h2>
+  <div class="warn"><strong>Cai obrigatoriamente na prova.</strong></div>
+  <ul>
+    <li><strong>Cliente x servidor:</strong> o navegador é o <em>cliente</em> (pede e exibe). O servidor (Apache + PHP) recebe, processa e responde.</li>
+    <li><strong>Apache no XAMPP:</strong> é o servidor web. Recebe a requisição; se for arquivo estático (imagem, CSS, HTML) entrega direto; se for <code>.php</code>, passa ao PHP executar.</li>
+    <li><strong>Papel do PHP:</strong> roda <em>no servidor</em>, lê os dados da requisição, executa a lógica e gera a resposta. O navegador nunca vê o código PHP, só o resultado.</li>
+    <li><strong>Ciclo:</strong> Request (método, URL, cabeçalhos, corpo) → processamento → Response (status, cabeçalhos, corpo).</li>
+    <li><strong>localhost:</strong> o próprio computador (127.0.0.1). No XAMPP, <code>http://localhost/</code> aponta para <code>C:\xampp\htdocs</code>. Arquivo em <code>htdocs\loja\produtos.php</code> abre em <code>http://localhost/loja/produtos.php</code>.</li>
+  </ul>
+  <div class="tw"><table>
+    <tr><th>Método</th><th>Para quê</th><th>CRUD</th></tr>
+    <tr><td><b>GET</b></td><td>Buscar/ler um recurso. Dados na URL.</td><td>Read</td></tr>
+    <tr><td><b>POST</b></td><td>Enviar dados para criar algo. Dados no corpo.</td><td>Create</td></tr>
+    <tr><td><b>PUT</b></td><td>Atualizar um recurso existente.</td><td>Update</td></tr>
+    <tr><td><b>DELETE</b></td><td>Remover um recurso.</td><td>Delete</td></tr>
+  </table></div>
+  <h3>Servidor x navegador</h3>
+  <p>PHP processa no servidor. JavaScript processa no navegador. Por isso "Exibir código-fonte" mostra só o HTML gerado.</p>
+  <h3>HTML x JSON</h3>
+  <p>HTML é uma página para o navegador desenhar. JSON é dado puro para outro programa ler (API). Na Aula 8, <code>/categorias</code> devolve HTML e <code>/api/categorias</code> devolve JSON com <code>header("Content-Type: application/json")</code> + <code>json_encode(...)</code>.</p>
+  <h3>Rota x query string x formulário</h3>
+  <pre>http://localhost/aula8/categorias/5?ordem=nome
+                      └─ rota ──────┘ └ query string ┘</pre>
+  <ul>
+    <li><strong>Parâmetro de rota:</strong> faz parte do caminho (<code>/categorias/5</code>). O roteador lê pelo <code>$_SERVER["REQUEST_URI"]</code>.</li>
+    <li><strong>Query string:</strong> depois do <code>?</code>, em pares <code>chave=valor</code> separados por <code>&amp;</code>. Chega em <code>$_GET</code>.</li>
+    <li><strong>Dados do formulário (POST):</strong> vão no corpo da requisição, não aparecem na URL. Chegam em <code>$_POST</code>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>2. Fundamentos da linguagem</h2>
+  <div class="fp"><strong>Foco do professor:</strong> interpretar pequenos trechos de código e dizer o resultado. Faça teste de mesa: anote o valor das variáveis linha a linha.</div>
+  <ul>
+    <li><strong>Estrutura:</strong> código entre <code>&lt;?php</code> e <code>?&gt;</code>; instruções terminam com <code>;</code>; <code>echo</code> imprime.</li>
+    <li><strong>Variáveis:</strong> começam com <code>$</code>, sensíveis a maiúsculas. Tipos: <code>int</code>, <code>float</code>, <code>string</code>, <code>bool</code>, <code>array</code>, <code>null</code>.</li>
+    <li><strong>Constantes:</strong> <code>define("TAXA", 0.1)</code> ou <code>const TAXA = 0.1</code>. Usadas <em>sem</em> <code>$</code> e não mudam.</li>
+    <li><strong>Strings:</strong> o <code>.</code> concatena. Aspas duplas leem variáveis (<code>"Olá $nome"</code>); aspas simples são literais.</li>
+  </ul>
+  <div class="tw"><table>
+    <tr><th>Operadores</th><th>Quais</th><th>Atenção</th></tr>
+    <tr><td><b>Aritméticos</b></td><td><code>+ - * / %</code></td><td><code>%</code> é o resto. <code>*</code> e <code>/</code> antes de <code>+</code> e <code>-</code>.</td></tr>
+    <tr><td><b>Relacionais</b></td><td><code>== === != !== &lt; &gt; &lt;= &gt;=</code></td><td><code>"5" == 5</code> é true; <code>"5" === 5</code> é false (tipo diferente).</td></tr>
+    <tr><td><b>Lógicos</b></td><td><code>&amp;&amp; || !</code></td><td><code>&amp;&amp;</code> precisa de todos; <code>||</code> basta um.</td></tr>
+  </table></div>
+  <h3>Condicionais e laços</h3>
+  <ul>
+    <li><strong>if / elseif / else:</strong> só um bloco executa, o primeiro verdadeiro.</li>
+    <li><strong>switch:</strong> compara com cada <code>case</code>. <em>Sem <code>break</code>, continua executando os cases de baixo.</em></li>
+    <li><strong>for:</strong> <code>for ($i = 0; $i &lt; 3; $i++)</code> roda com 0, 1, 2.</li>
+    <li><strong>while:</strong> testa antes de cada volta; pode não rodar nenhuma vez.</li>
+    <li><strong>foreach:</strong> percorre arrays. <code>foreach ($arr as $valor)</code> ou <code>foreach ($arr as $chave =&gt; $valor)</code>.</li>
+  </ul>
+  <h3>Arrays</h3>
+  <pre>$frutas = ["maçã", "banana", "uva"];      // indexado: $frutas[0] é "maçã"
+$aluno  = ["nome" => "Ana", "idade" => 20]; // associativo: $aluno["nome"]
+$frutas[] = "kiwi";                          // adiciona no fim
+count($frutas);                              // 4</pre>
+  <h3>Funções</h3>
+  <ul>
+    <li><code>return</code> devolve o valor para quem chamou; <code>echo</code> só mostra na tela.</li>
+    <li>Parâmetro com valor padrão: <code>function saudacao($nome, $periodo = "dia")</code>.</li>
+    <li>Tipagem: <code>function soma(int $a, int $b): int</code>.</li>
+    <li>Espalhamento: <code>soma(...$array)</code> passa cada item como um argumento (Aula 1).</li>
+  </ul>
+  <h3>require</h3>
+  <p><code>require "arquivo.php"</code> inclui outro arquivo; se ele não existir, <strong>erro fatal e o script para</strong>. <code>require_once</code> evita incluir duas vezes. (<code>include</code> só dá aviso e continua.)</p>
+</section>
+
+<section>
+  <h2>3. Formulários e superglobais</h2>
+  <div class="fp"><strong>Foco do professor:</strong> como os dados de um formulário chegam ao PHP e são processados.</div>
+  <pre>&lt;form action="ex1.php" method="POST"&gt;
+  &lt;input name="preco"&gt;                ──►  $_POST["preco"]  (sempre string)
+&lt;/form&gt;
+
+$preco = (float) $_POST["preco"];      // converte antes de calcular</pre>
+  <div class="tw"><table>
+    <tr><th></th><th>method="GET"</th><th>method="POST"</th></tr>
+    <tr><td><b>Onde vão os dados</b></td><td>Na URL (<code>?campo=valor</code>)</td><td>No corpo da requisição</td></tr>
+    <tr><td><b>Superglobal</b></td><td><code>$_GET</code></td><td><code>$_POST</code></td></tr>
+    <tr><td><b>Quando usar</b></td><td>Busca, filtros, links compartilháveis</td><td>Cadastros, login, senhas, alterar dados</td></tr>
+  </table></div>
+  <ul>
+    <li><strong>A chave é o <code>name</code></strong> do input, não o <code>id</code> nem o <code>type</code>.</li>
+    <li><strong><code>$_SERVER</code>:</strong> dados da requisição. <code>REQUEST_METHOD</code> (GET, POST...) e <code>REQUEST_URI</code> (caminho com query string).</li>
+    <li><strong>Tudo chega como string.</strong> Converta com <code>(int)</code> e <code>(float)</code>. Cuidado: <code>(float) "12,50"</code> vira <code>12</code>; a Lista 3 usa <code>str_replace(",", ".", ...)</code> antes.</li>
+    <li>Uma requisição pode ter os dois: <code>action="salvar.php?id=7" method="POST"</code> dá <code>$_GET["id"]</code> e os campos em <code>$_POST</code>.</li>
+  </ul>
+  <h3>Validação básica</h3>
+  <dl>
+    <dt><code>isset($_POST["nome"], ...)</code></dt><dd>Confere se os campos foram enviados (existem e não são null). Ex. 5 da Lista 2.</dd>
+    <dt><code>$_POST["nome"] ?? ""</code></dt><dd>Usa o valor padrão se a chave não existir.</dd>
+    <dt><code>trim()</code></dt><dd>Tira espaços das pontas, para <code>"   "</code> contar como vazio.</dd>
+    <dt><code>is_numeric()</code></dt><dd>Confere se o texto é um número válido antes de converter.</dd>
+    <dt><code>htmlspecialchars()</code></dt><dd>Ao exibir o que o usuário digitou, transforma HTML em texto (evita XSS).</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>4. Arquitetura MVC e organização de projetos</h2>
+  <div class="fp"><strong>Foco do professor:</strong> compreender o caminho de uma requisição até a apresentação de uma página HTML.</div>
+  <div class="cols">
+    <div class="col"><b>Model</b><span>Dados e regras de negócio. Classes como <code>Produto</code>, <code>Categoria</code>, com <code>salvar()</code>.</span></div>
+    <div class="col"><b>View</b><span>Apresentação: o HTML. <code>app/Views/layout.php</code> e <code>categorias/index.php</code>.</span></div>
+    <div class="col"><b>Controller</b><span>Recebe a requisição, chama o Model e escolhe a View. <code>CategoriaController</code>.</span></div>
+  </div>
+  <h3>O caminho de GET /aula8/categorias</h3>
+  <ol class="flow">
+    <li><b>Apache + .htaccess</b><span>Não é arquivo real, então <code>RewriteRule ^ index.php</code> manda para o index.php.</span></li>
+    <li><b>index.php (rotas)</b><span>Carrega <code>vendor/autoload.php</code>, limpa a URI (<code>strtok</code>, tira <code>/aula8</code>, <code>rtrim</code>) e confere o <code>REQUEST_METHOD</code>.</span></li>
+    <li><b>Controller</b><span><code>(new CategoriaController())-&gt;index()</code> pega os dados e chama o Render com <code>compact('titulo', 'categorias')</code>.</span></li>
+    <li><b>View</b><span><code>Render</code> faz <code>extract</code>, renderiza a view com <code>ob_start</code> e coloca dentro do <code>layout.php</code>.</span></li>
+    <li><b>Resposta</b><span>O HTML volta pelo Apache até o navegador.</span></li>
+  </ol>
+  <p>Mesma URI, método diferente, ação diferente: <code>GET /api/categorias</code> chama <code>list()</code> (JSON) e <code>POST /api/categorias</code> chama <code>create()</code>.</p>
+  <h3>require, autoload e Composer</h3>
+  <ul>
+    <li><strong>Sem Composer</strong> (Aula 4, Listas 3 e 4): cada arquivo faz <code>require_once</code> das classes que usa.</li>
+    <li><strong>Com Composer</strong> (Aulas 8 e 9): um único <code>require_once __DIR__ . "/vendor/autoload.php";</code> e as classes são carregadas sozinhas quando usadas.</li>
+    <li>Mudou o <code>autoload</code> do <code>composer.json</code>? Rode <code>composer dump-autoload</code>.</li>
+  </ul>
+  <h3>PSR-4 e namespaces</h3>
+  <pre>"autoload": { "psr-4": { "App\\": "app/" } }
+
+App\Controllers\CategoriaController  ──►  app/Controllers/CategoriaController.php</pre>
+  <ul>
+    <li><strong>PSR</strong> = PHP Standards Recommendation (PHP-FIG). <strong>PSR-4</strong> = padrão de autoload que liga namespace a pasta.</li>
+    <li><code>namespace App\Controllers;</code> é a primeira instrução do arquivo da classe.</li>
+    <li><code>use App\Controllers\CategoriaController;</code> só importa o nome. Não carrega arquivo: quem carrega é o autoload.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Pegadinhas de prova</h2>
+  <ul>
+    <li>PHP roda no servidor; o navegador só recebe HTML ou JSON.</li>
+    <li><code>localhost</code> = <code>htdocs</code>. A palavra htdocs não aparece na URL.</li>
+    <li>Rota fica antes do <code>?</code>; query string fica depois e vai para <code>$_GET</code>.</li>
+    <li>A chave do <code>$_POST</code> é o <code>name</code> do input.</li>
+    <li>Tudo do formulário é string; vírgula decimal quebra o <code>(float)</code>.</li>
+    <li><code>==</code> compara valor; <code>===</code> compara valor e tipo.</li>
+    <li><code>switch</code> sem <code>break</code> continua executando os cases seguintes.</li>
+    <li>Índice de array começa no 0.</li>
+    <li><code>echo</code> mostra; <code>return</code> devolve.</li>
+    <li><code>require</code> sem o arquivo = erro fatal; <code>use</code> não é <code>require</code>.</li>
+  </ul>
+</section>
+<p style="color:var(--muted);font-size:.9rem">Baseado nas aulas 1 a 9, nas listas 2 a 4 e na apresentação do conteúdo da prova final. Bons estudos e boa prova.</p>
+</div>
+</body>
+</html>
