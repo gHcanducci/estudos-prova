@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Simulado PHP 3</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: uma questão por vez, coluna única; tela inicial com filtros, tela final com revisão dos erros */
+:root{
+  --bg:#f3f6f9; --surface:#ffffff; --surface2:#e9eef4; --fg:#142230; --muted:#4d6073; --line:#d3dce6;
+  --accent:#1f5fbf; --accent-soft:#dbe8fb; --ok:#17784a; --ok-soft:#dcf2e6; --bad:#b42318; --bad-soft:#fbe3e1;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Schibsted Grotesk","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1620; --surface:#15212d; --surface2:#1c2b3a; --fg:#e6eef6; --muted:#9db0c3; --line:#2a3b4d;
+  --accent:#6ea6f5; --accent-soft:#1b3050; --ok:#5fcf96; --ok-soft:#173a2b; --bad:#f08a80; --bad-soft:#3d1c1a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1620; --surface:#15212d; --surface2:#1c2b3a; --fg:#e6eef6; --muted:#9db0c3; --line:#2a3b4d;
+  --accent:#6ea6f5; --accent-soft:#1b3050; --ok:#5fcf96; --ok-soft:#173a2b; --bad:#f08a80; --bad-soft:#3d1c1a; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding-block:36px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1,h2{font-family:var(--display);line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:clamp(2rem,6vw,2.6rem);letter-spacing:-.02em}
+h2{font-size:1.3rem}
+p{margin:0}
+.label{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.muted{color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface2);color:var(--fg);border-radius:999px;padding:8px 14px;font:inherit;font-size:.92rem;cursor:pointer;min-height:40px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#0e1620}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0e1620}}
+.btn{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:var(--accent);color:#fff;min-height:46px}
+:root[data-theme="dark"] .btn{color:#0e1620}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn{color:#0e1620}}
+.btn.sec{background:var(--surface2);color:var(--fg);border:1px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bar{height:8px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+.q{font-family:var(--display);font-size:1.25rem;line-height:1.3}
+pre{margin:0;font-family:var(--mono);font-size:.8rem;line-height:1.45;background:var(--surface2);border-radius:10px;padding:14px;overflow-x:auto;white-space:pre}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{text-align:left;font:inherit;background:var(--surface);color:var(--fg);border:1.5px solid var(--line);border-radius:12px;padding:13px 15px;cursor:pointer;display:flex;gap:12px;align-items:flex-start}
+.opt b{font-family:var(--mono);color:var(--muted);flex:none}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt:disabled{cursor:default}
+.exp{border-radius:12px;padding:14px 16px;background:var(--surface2)}
+.tip{margin-top:10px;border-left:3px solid var(--accent);padding:4px 0 4px 12px}
+.tip b{display:block;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.exp.ok{background:var(--ok-soft)} .exp.no{background:var(--bad-soft)}
+.score{font-family:var(--display);font-size:3rem;line-height:1}
+.err{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:6px}
+.err:first-child{border-top:0;padding-top:0}
+.tag{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.stat{background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:.9rem}
+[hidden]{display:none!important}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+<a href="../" style="color:var(--accent);font-weight:600;text-decoration:none">← Início</a>
+<header style="display:flex;flex-direction:column;gap:10px">
+  <span class="label">Linguagem de Programação PHP</span>
+  <h1>Simulado PHP 3</h1>
+  <p class="muted">Questões comparativas: diferenças entre termos e conceitos que andam juntos na matéria (GET x POST, == x ===, Model x Controller...). Três níveis, quatro tópicos, uma questão por vez.</p>
+</header>
+
+<!-- INÍCIO -->
+<section id="start" class="card">
+  <h2>Monte o seu simulado</h2>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <span class="label">Assuntos</span>
+    <div class="chips" id="topics"></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <span class="label">Nível</span>
+    <div class="chips" id="levels"></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <span class="label">Quantidade</span>
+    <div class="chips" id="sizes"></div>
+  </div>
+  <p class="muted" id="avail"></p>
+  <div class="row"><button class="btn" id="go">Começar simulado →</button></div>
+</section>
+
+<!-- QUESTÃO -->
+<section id="quiz" hidden style="display:flex;flex-direction:column;gap:16px">
+  <div class="row" style="justify-content:space-between">
+    <span class="tag" id="qtopic"></span>
+    <span class="muted" id="qcount" style="font-size:.9rem"></span>
+  </div>
+  <div class="bar"><i id="qbar"></i></div>
+  <p class="q" id="qtext"></p>
+  <pre id="qdiag" hidden></pre>
+  <div class="opts" id="qopts"></div>
+  <div class="exp" id="qexp" hidden></div>
+  <div class="row">
+    <button class="btn" id="confirm" disabled>Confirmar</button>
+    <button class="btn" id="next" hidden>Próxima →</button>
+    <button class="btn sec" id="quit" style="margin-left:auto">Encerrar</button>
+  </div>
+</section>
+
+<!-- RESULTADO -->
+<section id="result" hidden style="display:flex;flex-direction:column;gap:18px">
+  <div class="card">
+    <span class="label">Resultado</span>
+    <div class="row" style="align-items:baseline;gap:14px"><span class="score" id="rscore"></span><span class="muted" id="rpct"></span></div>
+    <p id="rmsg"></p>
+    <div class="stats" id="rstats"></div>
+    <div class="row">
+      <button class="btn" id="redo">Refazer as erradas</button>
+      <button class="btn sec" id="again">Novo simulado</button>
+    </div>
+  </div>
+  <div class="card" id="rerrs"></div>
+</section>
+
+</div>
+
+<script>
+const BANK = [
+{"t": "HTTP e Apache", "n": "Fácil", "q": "Cliente x servidor: qual afirmação está correta?", "o": ["O cliente faz o pedido; o servidor processa e responde", "O servidor faz o pedido; o cliente processa e responde", "O cliente processa o PHP; o servidor só guarda arquivos", "O cliente e o servidor executam o PHP juntos"], "e": "O navegador (cliente) envia o request. O Apache com o PHP (servidor) processa e devolve o response.", "m": "Cliente pede, servidor serve."},
+{"t": "HTTP e Apache", "n": "Fácil", "q": "Request x response: qual é a diferença?", "o": ["Request vai do navegador ao servidor; response volta", "Response vai do navegador ao servidor; request volta", "Request é a página HTML; response é o código PHP", "Request é sempre GET; response é sempre POST"], "e": "Request é o pedido (método, URL, cabeçalhos, corpo). Response é a resposta (status, cabeçalhos, corpo com HTML ou JSON).", "m": "Request = pergunta. Response = resposta."},
+{"t": "HTTP e Apache", "n": "Fácil", "q": "GET x POST: em qual deles os dados aparecem na URL?", "o": ["Só no GET", "Só no POST", "Nos dois", "Em nenhum dos dois"], "e": "GET coloca os dados na query string (?campo=valor). POST manda no corpo da requisição.", "m": "GET é cartão-postal; POST é carta no envelope."},
+{"t": "HTTP e Apache", "n": "Fácil", "q": "Apache x PHP: qual é o papel de cada um no XAMPP?", "o": ["Apache recebe a requisição; PHP executa o código", "PHP recebe a requisição; Apache executa o código", "Apache guarda os dados; PHP desenha a página", "Apache executa o código; PHP guarda os dados"], "e": "O Apache é o servidor web. Quando o pedido é um .php, ele repassa ao PHP, que executa e gera a resposta.", "m": "Apache é o porteiro; PHP é a cozinha."},
+{"t": "HTTP e Apache", "n": "Médio", "q": "POST x PUT: qual a diferença de uso numa API?", "o": ["POST cria um recurso novo; PUT atualiza um existente", "POST atualiza um recurso; PUT cria um novo", "POST lê os dados; PUT apaga um recurso", "Nenhuma: são dois nomes para a mesma ação"], "e": "No CRUD: POST cria, GET lê, PUT atualiza, DELETE apaga.", "m": "PUT = pôr por cima do que já existe."},
+{"t": "HTTP e Apache", "n": "Médio", "q": "Processamento no servidor x no navegador: o que é verdade?", "o": ["PHP roda no servidor; JavaScript roda no navegador", "PHP roda no navegador; JavaScript roda no servidor", "PHP e JavaScript rodam os dois no servidor", "PHP e JavaScript rodam os dois no navegador"], "e": "O PHP termina de rodar antes da resposta sair. O navegador recebe HTML (e pode rodar JavaScript nele).", "m": "Servidor = PHP. Navegador = HTML, CSS e JS."},
+{"t": "HTTP e Apache", "n": "Médio", "q": "Resposta HTML x resposta JSON: quem costuma consumir cada uma?", "o": ["HTML: o navegador exibe. JSON: um programa lê", "HTML: um programa lê. JSON: o navegador exibe", "HTML: o banco de dados. JSON: o Apache", "HTML: o Apache. JSON: o banco de dados"], "e": "Na Aula 8, /categorias devolve HTML para a pessoa ver e /api/categorias devolve JSON para outro sistema usar.", "m": "HTML é para olhos; JSON é para código."},
+{"t": "HTTP e Apache", "n": "Médio", "q": "localhost x htdocs: qual a relação entre eles no XAMPP?", "o": ["localhost é o endereço; htdocs é a pasta que ele serve", "htdocs é o endereço; localhost é a pasta que ele serve", "localhost é o banco; htdocs é o servidor web", "São a mesma coisa com nomes diferentes"], "e": "http://localhost/ aponta para C:\\xampp\\htdocs. A pasta não aparece na URL.", "m": "Endereço localhost, casa htdocs."},
+{"t": "HTTP e Apache", "n": "Difícil", "q": "Parâmetro de rota x query string x dado de formulário POST: onde fica cada um?", "o": ["Rota no caminho; query após o ?; POST no corpo", "Rota após o ?; query no caminho; POST no corpo", "Rota no corpo; query após o ?; POST no caminho", "Rota no caminho; query no corpo; POST após o ?"], "e": "Em /categorias/5?ordem=nome, o 5 é rota, ordem=nome é query string ($_GET) e os campos de um form POST vão no corpo ($_POST).", "m": "Caminho, interrogação, corpo."},
+{"t": "HTTP e Apache", "n": "Difícil", "q": "text/html x application/json no header Content-Type: o que muda?", "o": ["Só o tipo declarado da resposta, não o conteúdo", "O conteúdo é convertido para o tipo declarado", "O método da requisição passa a ser POST", "A resposta passa a ser criptografada"], "e": "O header só informa o tipo. Quem gera o JSON de verdade é o json_encode; o header avisa o cliente de como ler.", "m": "header é a etiqueta; json_encode é o conteúdo."},
+{"t": "HTTP e Apache", "n": "Difícil", "q": "Arquivo estático x arquivo .php: como o Apache trata cada um?", "o": ["Estático é entregue como está; .php é executado antes", "Estático é executado antes; .php é entregue como está", "Os dois são executados pelo PHP antes de sair", "Os dois são entregues como estão, sem execução"], "e": "Imagem, CSS e HTML puro saem direto. Só o .php passa pelo interpretador.", "m": "Caixa fechada passa direto; receita vai para a cozinha."},
+{"t": "HTTP e Apache", "n": "Difícil", "q": "Abrir ex1.html por file:/// x por http://localhost: o que muda ao enviar o form?", "o": ["Só pelo localhost o ex1.php é executado", "Só pelo file:/// o ex1.php é executado", "Nos dois o ex1.php é executado igual", "Em nenhum dos dois o ex1.php é executado"], "e": "file:/// abre o arquivo sem servidor. Só com o Apache no caminho o PHP roda.", "m": "Sem servidor, sem PHP."},
+{"t": "Fundamentos", "n": "Fácil", "q": "== x ===: qual a diferença?", "o": ["== compara valor; === compara valor e tipo", "== compara valor e tipo; === compara valor", "== atribui valor; === compara valor", "Nenhuma: os dois fazem a mesma comparação"], "e": "\"5\" == 5 é true (só valor). \"5\" === 5 é false (string x int). Atribuir é com um = só.", "m": "Três iguais, três exigências."},
+{"t": "Fundamentos", "n": "Fácil", "q": "Array indexado x associativo: qual a diferença?", "o": ["Indexado usa posições numéricas; associativo usa nomes", "Indexado usa nomes; associativo usa posições numéricas", "Indexado só guarda números; associativo só guarda texto", "Indexado tem tamanho fixo; associativo cresce sozinho"], "e": "[\"maçã\", \"banana\"] usa 0 e 1. [\"nome\" => \"Ana\"] usa a chave \"nome\". Os dois guardam qualquer tipo.", "m": "Indexado = fila numerada. Associativo = ficha com campos."},
+{"t": "Fundamentos", "n": "Fácil", "q": "Variável x constante: qual a diferença?", "o": ["Variável tem $ e pode mudar; constante não", "Constante tem $ e pode mudar; variável não", "As duas têm $, mas só a constante muda", "Nenhuma das duas usa $ e as duas mudam"], "e": "$preco = 10; pode virar outro valor. define(\"TAXA\", 0.1) ou const TAXA = 0.1 fica fixo e é usado sem $.", "m": "Constante não muda e não tem cifrão."},
+{"t": "Fundamentos", "n": "Fácil", "q": "Operador . x operador +: qual a diferença em PHP?", "o": [". junta textos; + soma números", ". soma números; + junta textos", "Os dois juntam textos", ". e + são iguais em PHP"], "e": "\"Olá \" . $nome concatena. 2 + 3 soma. Em JavaScript o + faz os dois, em PHP não.", "m": "PHP costura texto com ponto."},
+{"t": "Fundamentos", "n": "Médio", "q": "echo x return dentro de uma função: o que cada um faz?", "o": ["echo mostra na tela; return devolve o valor", "echo devolve o valor; return mostra na tela", "Os dois mostram na tela, mas return é mais rápido", "Os dois devolvem o valor, mas echo encerra a função"], "e": "Na Aula 1, printar() usa echo; saudacao() usa return e o valor é impresso por quem chamou: echo saudacao(...).", "m": "echo fala; return entrega."},
+{"t": "Fundamentos", "n": "Médio", "q": "Aspas simples x aspas duplas com $nome = \"Ana\": o que imprimem 'Olá $nome' e \"Olá $nome\"?", "o": ["Olá $nome e Olá Ana", "Olá Ana e Olá $nome", "Olá Ana e Olá Ana", "Olá $nome e Olá $nome"], "e": "Aspas duplas trocam a variável pelo valor (interpolação). Aspas simples imprimem o texto como está.", "m": "Duplas leem variáveis; simples são literais."},
+{"t": "Fundamentos", "n": "Médio", "q": "for x foreach: quando usar cada um?", "o": ["for: repetir N vezes com contador; foreach: percorrer um array", "for: percorrer um array; foreach: repetir N vezes com contador", "for: só para arrays associativos; foreach: só indexados", "for: só com while dentro; foreach: só com if dentro"], "e": "for ($i = 0; $i \u003c 3; $i++) usa contador. foreach ($p as $chave => $valor) anda pelos itens do array.", "m": "for conta; foreach visita."},
+{"t": "Fundamentos", "n": "Médio", "q": "&& x ||: qual a diferença?", "o": ["&& exige todas verdadeiras; || basta uma", "&& basta uma verdadeira; || exige todas", "&& compara valores; || compara tipos", "&& é para números; || é para textos"], "e": "No controllerProduto: if ($nome === \"\" || !is_numeric($preco)) dá erro se qualquer um dos dois problemas acontecer.", "m": "E = todos. Ou = pelo menos um."},
+{"t": "Fundamentos", "n": "Difícil", "q": "require x include, quando o arquivo não existe:", "o": ["require dá erro fatal; include dá aviso e segue", "include dá erro fatal; require dá aviso e segue", "Os dois dão erro fatal e param o script", "Os dois dão só um aviso e seguem"], "e": "require é obrigatório: sem o arquivo, o script para. include só avisa.", "m": "require = requisito obrigatório."},
+{"t": "Fundamentos", "n": "Difícil", "q": "require x require_once: qual a diferença?", "o": ["require_once não inclui de novo um arquivo já incluído", "require_once inclui o arquivo toda vez que é chamado", "require_once só funciona com o Composer", "require_once não para o script se faltar o arquivo"], "e": "Nas Listas 3 e 4, sessao.php e os models usam require_once para não declarar a mesma classe duas vezes.", "m": "once = uma vez só."},
+{"t": "Fundamentos", "n": "Difícil", "q": "if/elseif x switch sem break: qual a diferença de comportamento?", "o": ["if/elseif executa um bloco; switch sem break segue nos de baixo", "switch sem break executa um bloco; if/elseif segue nos de baixo", "Os dois executam todos os blocos verdadeiros", "Os dois executam só o primeiro bloco, sempre"], "e": "No if/elseif, só o primeiro teste verdadeiro roda. No switch, sem break, depois de entrar num case ele continua pelos seguintes.", "m": "Sem break, o switch vira escorregador."},
+{"t": "Fundamentos", "n": "Difícil", "q": "Parâmetro com valor padrão x parâmetro obrigatório, em soma(int $n1, ..., int $n5) e saudacaoComParametrosSemValores($nome, $idade = 18):", "o": ["Faltar $idade usa 18; faltar $n5 dá erro fatal", "Faltar $idade dá erro fatal; faltar $n5 usa 0", "Faltar qualquer um dá só um aviso", "Faltar qualquer um faz o valor virar null"], "e": "Com = 18, o parâmetro tem reserva. Sem padrão, faltar o argumento gera ArgumentCountError.", "m": "Padrão é plano B. Sem plano B, erro."},
+{"t": "Formulários", "n": "Fácil", "q": "$_GET x $_POST: de onde vem cada um?", "o": ["$_GET da URL; $_POST do corpo da requisição", "$_GET do corpo da requisição; $_POST da URL", "$_GET do servidor; $_POST do navegador", "$_GET da sessão; $_POST dos cookies"], "e": "Query string vai para $_GET. Campos de form com method=POST vão para $_POST.", "m": "Está na URL? $_GET."},
+{"t": "Formulários", "n": "Fácil", "q": "Atributo name x atributo id no input: qual vira a chave no PHP?", "o": ["O name", "O id", "Os dois, juntos", "Nenhum, é o type"], "e": "Em \u003cinput id=\"nome\" name=\"nome\">, o PHP lê $_POST[\"nome\"] por causa do name. O id serve ao label e ao CSS.", "m": "name vai para o PHP; id fica no HTML."},
+{"t": "Formulários", "n": "Fácil", "q": "action x method no \u003cform>: o que cada um define?", "o": ["action: para onde vai; method: como vai", "action: como vai; method: para onde vai", "action: o botão; method: os campos", "action: a validação; method: o layout"], "e": "action=\"ex1.php\" é o destino. method=\"POST\" é o verbo HTTP.", "m": "action = endereço. method = transporte."},
+{"t": "Formulários", "n": "Fácil", "q": "$_POST x $_FILES no upload da Aula 1: o que vai para cada um?", "o": ["Campos de texto em $_POST; arquivos em $_FILES", "Arquivos em $_POST; campos de texto em $_FILES", "Tudo vai para $_POST", "Tudo vai para $_FILES"], "e": "O input type=\"file\" chega em $_FILES['arquivo'], com name, tmp_name e error.", "m": "Arquivo tem gaveta própria: $_FILES."},
+{"t": "Formulários", "n": "Médio", "q": "required no HTML x validação no PHP: qual a diferença?", "o": ["required é no navegador e pode ser burlado; o PHP garante", "O PHP é no navegador; required é no servidor", "required é suficiente; o PHP não precisa validar", "Os dois rodam no servidor, em momentos diferentes"], "e": "required só ajuda o usuário. Qualquer um pode mandar uma requisição sem o formulário, por isso as listas validam no PHP.", "m": "required ajuda; o PHP garante."},
+{"t": "Formulários", "n": "Médio", "q": "isset() x checar === \"\": o que cada um verifica?", "o": ["isset: se o campo existe; === \"\": se está vazio", "isset: se está vazio; === \"\": se o campo existe", "Os dois verificam se o campo está vazio", "Os dois verificam se o campo existe"], "e": "Um input enviado em branco existe ($_POST[\"nome\"] é \"\"), então isset dá true. Por isso a Lista 3 faz trim e compara com \"\".", "m": "Existir não é estar preenchido."},
+{"t": "Formulários", "n": "Médio", "q": "trim() x htmlspecialchars(): para que serve cada um?", "o": ["trim tira espaços; htmlspecialchars neutraliza HTML", "trim neutraliza HTML; htmlspecialchars tira espaços", "Os dois tiram espaços das pontas", "Os dois neutralizam HTML digitado"], "e": "trim é usado na entrada, para validar. htmlspecialchars é usado na saída, ao exibir.", "m": "trim limpa a borda; htmlspecialchars desarma a tag."},
+{"t": "Formulários", "n": "Médio", "q": "REQUEST_METHOD x REQUEST_URI em $_SERVER: o que cada um traz?", "o": ["METHOD: o verbo; URI: o caminho pedido", "METHOD: o caminho pedido; URI: o verbo", "METHOD: o arquivo .php; URI: a pasta", "METHOD: o navegador; URI: o servidor"], "e": "Na Aula 8: $metodo = $_SERVER[\"REQUEST_METHOD\"] (GET, POST) e $uri = $_SERVER[\"REQUEST_URI\"] (ex.: /aula8/categorias?pagina=2).", "m": "METHOD = como. URI = onde."},
+{"t": "Formulários", "n": "Difícil", "q": "is_numeric() x (float): qual a diferença com o texto \"abc\"?", "o": ["is_numeric diz false; (float) devolve 0", "is_numeric diz true; (float) devolve 0", "is_numeric diz false; (float) dá erro", "is_numeric dá erro; (float) devolve null"], "e": "(float) nunca reclama: converte o que der, e \"abc\" vira 0. Por isso as listas testam is_numeric antes de converter.", "m": "Primeiro pergunte se é número; depois converta."},
+{"t": "Formulários", "n": "Difícil", "q": "?? x isset(): como se relacionam?", "o": ["?? usa um padrão quando isset seria false", "?? testa se o valor é numérico", "?? só funciona dentro do isset", "?? soma os dois lados se forem números"], "e": "$_POST[\"nome\"] ?? \"\" equivale a isset($_POST[\"nome\"]) ? $_POST[\"nome\"] : \"\".", "m": "?? = isset com plano B."},
+{"t": "Formulários", "n": "Difícil", "q": "Validar na entrada x escapar na saída: qual par está certo?", "o": ["Entrada: trim e is_numeric; saída: htmlspecialchars", "Entrada: htmlspecialchars; saída: trim e is_numeric", "Entrada e saída: só htmlspecialchars", "Entrada e saída: só trim"], "e": "Os controllers das Listas 3 e 4 validam o POST antes de salvar e escapam o texto ao montar a lista.", "m": "Confere na porta de entrada; desarma na vitrine."},
+{"t": "Formulários", "n": "Difícil", "q": "Form com action=\"salvar.php?id=7\" e method=\"POST\": como chegam o id e o campo nome?", "o": ["id em $_GET; nome em $_POST", "id em $_POST; nome em $_GET", "Os dois em $_POST", "Os dois em $_GET"], "e": "O que está na URL do action é query string ($_GET). Os campos do form vão no corpo do POST.", "m": "Uma requisição pode ter $_GET e $_POST ao mesmo tempo."},
+{"t": "MVC", "n": "Fácil", "q": "Model x View: qual a diferença?", "o": ["Model cuida dos dados; View mostra o HTML", "Model mostra o HTML; View cuida dos dados", "Model recebe o POST; View salva os dados", "Model é o layout; View é a classe"], "e": "Produto e Categoria são Models. app/Views/layout.php e categorias/index.php são Views.", "m": "Model = cozinha. View = vitrine."},
+{"t": "MVC", "n": "Fácil", "q": "Controller x Model: qual a diferença?", "o": ["Controller recebe o pedido; Model guarda e salva", "Model recebe o pedido; Controller guarda e salva", "Controller desenha a tela; Model faz as rotas", "Os dois desenham a tela, em partes"], "e": "Na Aula 4, controller.php lê o $_POST e cria um Produto; produtos.php (Model) tem a classe com salvar().", "m": "Controller = garçom. Model = cozinha."},
+{"t": "MVC", "n": "Fácil", "q": "Classe x objeto: qual a diferença?", "o": ["Classe é o molde; objeto é criado dela com new", "Objeto é o molde; classe é criada dele com new", "Classe e objeto são a mesma coisa", "Classe guarda funções; objeto guarda arquivos"], "e": "class Carro { ... } é o molde. $carro = new Carro(\"Honda\", \"CR-V\") é um objeto feito com ele.", "m": "Classe = forma de bolo. Objeto = o bolo."},
+{"t": "MVC", "n": "Fácil", "q": "public x private numa propriedade: qual a diferença?", "o": ["public pode ser lido de fora; private só dentro da classe", "private pode ser lido de fora; public só dentro da classe", "Os dois podem ser lidos de fora", "Nenhum dos dois pode ser lido de fora"], "e": "Na Aula 3, $carro->marca é public. O $saldo da ContaBancaria é private: ler de fora dá erro fatal.", "m": "private é gaveta trancada."},
+{"t": "MVC", "n": "Médio", "q": "get x set: o que cada um faz no ProdutoModelo da Aula 3?", "o": ["get devolve o valor; set altera o valor", "get altera o valor; set devolve o valor", "Os dois devolvem o valor", "Os dois criam o objeto"], "e": "getNome() retorna $this->nome. setNome($nome) muda $this->nome. Assim a propriedade pode ser private.", "m": "get = pegar. set = definir."},
+{"t": "MVC", "n": "Médio", "q": "namespace x use: qual a diferença?", "o": ["namespace declara o nome; use importa o nome", "namespace importa o nome; use declara o nome", "namespace carrega o arquivo; use cria o objeto", "Os dois carregam o arquivo da classe"], "e": "CategoriaController.php começa com namespace App\\Controllers;. O index.php faz use App\\Controllers\\CategoriaController;.", "m": "namespace é o sobrenome; use é o apelido."},
+{"t": "MVC", "n": "Médio", "q": "require x autoload do Composer: qual a diferença?", "o": ["require é um por arquivo; autoload carrega quando usa", "autoload é um por arquivo; require carrega quando usa", "require exige Composer; autoload não exige", "Os dois exigem um require para cada classe"], "e": "A Lista 3 faz require_once de cada model. A Aula 8 só faz require do vendor/autoload.php.", "m": "Autoload = carregamento automático."},
+{"t": "MVC", "n": "Médio", "q": "composer.json x vendor/autoload.php: qual a diferença?", "o": ["composer.json é a configuração; autoload.php é o gerado", "composer.json é o gerado; autoload.php é a configuração", "Os dois são escritos à mão pelo programador", "Os dois são gerados pelo Composer sozinho"], "e": "Você escreve o mapeamento PSR-4 no composer.json. O Composer gera o vendor/autoload.php, que o index.php carrega.", "m": "json é o mapa; vendor é o GPS gerado."},
+{"t": "MVC", "n": "Difícil", "q": ".htaccess x index.php na Aula 8: o que cada um faz?", "o": [".htaccess desvia para o index.php; o index.php escolhe a rota", "O index.php desvia para o .htaccess; ele escolhe a rota", ".htaccess escolhe o controller; o index.php é a view", "Os dois escolhem a rota, e o primeiro que achar vence"], "e": "RewriteRule ^ index.php manda tudo para o index.php. Lá, $uri e $metodo decidem qual método do controller chamar.", "m": "Apache leva à portaria; a portaria decide a sala."},
+{"t": "MVC", "n": "Difícil", "q": "Rota de view x rota de API na Aula 8: qual a diferença?", "o": ["/categorias devolve HTML; /api/categorias devolve JSON", "/categorias devolve JSON; /api/categorias devolve HTML", "As duas devolvem HTML, com layouts diferentes", "As duas devolvem JSON, com campos diferentes"], "e": "index() usa o Render com o layout. list() muda o Content-Type e faz json_encode.", "m": "api = dados para programas."},
+{"t": "MVC", "n": "Difícil", "q": "compact() x extract() no Render da Aula 8: qual a diferença?", "o": ["compact junta variáveis num array; extract faz o inverso", "extract junta variáveis num array; compact faz o inverso", "Os dois juntam variáveis num array", "Os dois transformam o array em HTML"], "e": "O controller faz compact('titulo', 'categorias'). O Render faz extract($params) e a view volta a ter $titulo e $categorias.", "m": "compact empacota; extract desempacota."},
+{"t": "MVC", "n": "Difícil", "q": "View x layout no Render da Aula 8: qual a diferença?", "o": ["A view é o miolo; o layout é a moldura com o \u003cmain>", "O layout é o miolo; a view é a moldura com o \u003cmain>", "A view e o layout são o mesmo arquivo", "A view vai para o navegador; o layout fica na sessão"], "e": "A view vira $conteudo e o layout.php imprime $conteudo dentro do \u003cmain>, com o \u003ctitle> do $titulo.", "m": "View é o recheio; layout é o pão."},
+{"t": "MVC", "n": "Difícil", "q": "Herança x polimorfismo nas classes Animal, Cachorro e Gato da Aula 3:", "o": ["Herança: Gato ganha quantidadePatas(); polimorfismo: cada um tem seu comunicar()", "Herança: cada um tem seu comunicar(); polimorfismo: Gato ganha quantidadePatas()", "Herança e polimorfismo são o mesmo que extends", "Herança é só para métodos; polimorfismo só para atributos"], "e": "extends faz o filho herdar o que não reescreveu. Reescrever comunicar() com outro comportamento é polimorfismo.", "m": "Herdar é receber; polimorfismo é responder do seu jeito."},
+{"t": "MVC", "n": "Difícil", "q": "Sessão como banco falso x banco de verdade (PDO na Aula 9): qual a diferença?", "o": ["A sessão some com o navegador; o banco guarda para todos", "O banco some com o navegador; a sessão guarda para todos", "Os dois guardam para todos os usuários", "Os dois somem quando o navegador fecha"], "e": "Nas Listas 3 e 4 e na Aula 8 os dados ficam em $_SESSION, um por visitante. A Aula 9 grava numa tabela MySQL com PDO.", "m": "Sessão é bloco de notas pessoal; banco é arquivo da empresa."}
+];
+
+
+// ---------- estado ----------
+const TOPICS=[...new Set(BANK.map(x=>x.t))];
+const SIZES=[10,25,"Todas"];
+const LEVELS=["Fácil","Médio","Difícil"];
+let selLevels=new Set(LEVELS), selTopics=new Set(TOPICS), selSize=25, run=[], i=0, picked=-1, answers=[];
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]]}return a};
+
+function renderStart(){
+  $("topics").innerHTML="";
+  TOPICS.forEach(t=>{const b=document.createElement("button");b.className="chip";b.textContent=t+" ("+BANK.filter(x=>x.t===t).length+")";
+    b.setAttribute("aria-pressed",selTopics.has(t));b.onclick=()=>{selTopics.has(t)?selTopics.delete(t):selTopics.add(t);renderStart()};$("topics").appendChild(b)});
+  $("levels").innerHTML="";
+  LEVELS.forEach(l=>{const b=document.createElement("button");b.className="chip";b.textContent=l+" ("+BANK.filter(x=>x.n===l&&selTopics.has(x.t)).length+")";
+    b.setAttribute("aria-pressed",selLevels.has(l));b.onclick=()=>{selLevels.has(l)?selLevels.delete(l):selLevels.add(l);renderStart()};$("levels").appendChild(b)});
+  $("sizes").innerHTML="";
+  SIZES.forEach(s=>{const b=document.createElement("button");b.className="chip";b.textContent=s;b.setAttribute("aria-pressed",selSize===s);
+    b.onclick=()=>{selSize=s;renderStart()};$("sizes").appendChild(b)});
+  const n=BANK.filter(x=>selTopics.has(x.t)&&selLevels.has(x.n)).length;
+  $("avail").textContent=n?n+" questões disponíveis nos assuntos e níveis escolhidos.":"Escolha pelo menos um assunto e um nível.";
+  $("go").disabled=!n;
+}
+function build(pool){
+  return pool.map(x=>{const idx=shuffle([0,1,2,3]);return {...x,opts:idx.map(k=>x.o[k]),ans:idx.indexOf(0)}});
+}
+function begin(pool){
+  run=pool;i=0;answers=[];
+  show("quiz");renderQ();
+}
+function startNew(){
+  let pool=shuffle(BANK.filter(x=>selTopics.has(x.t)&&selLevels.has(x.n)));
+  // garante questões com diagrama no simulado quando possível
+  const n=selSize==="Todas"?pool.length:Math.min(selSize,pool.length);
+  const diag=pool.filter(x=>x.d), rest=pool.filter(x=>!x.d);
+  let pick=diag.slice(0,Math.min(2,n)); pick=pick.concat(rest.slice(0,n-pick.length));
+  if(pick.length<n) pick=pick.concat(diag.slice(2,2+n-pick.length));
+  begin(build(shuffle(pick)));
+}
+function show(id){["start","quiz","result"].forEach(s=>$(s).hidden=s!==id);window.scrollTo({top:0,behavior:"smooth"})}
+function renderQ(){
+  const q=run[i];picked=-1;
+  $("qtopic").textContent=q.t+" · "+q.n;
+  $("qcount").textContent="Questão "+(i+1)+" de "+run.length;
+  $("qbar").style.width=(i/run.length*100)+"%";
+  $("qtext").textContent=q.q;
+  $("qdiag").hidden=!q.d; $("qdiag").textContent=q.d||"";
+  $("qopts").innerHTML="";
+  q.opts.forEach((o,k)=>{const b=document.createElement("button");b.className="opt";
+    b.innerHTML="<b>"+"ABCD"[k]+"</b><span></span>";b.querySelector("span").textContent=o;
+    b.onclick=()=>{picked=k;[...$("qopts").children].forEach((c,j)=>c.classList.toggle("sel",j===k));$("confirm").disabled=false};
+    $("qopts").appendChild(b)});
+  $("qexp").hidden=true;$("confirm").hidden=false;$("confirm").disabled=true;$("next").hidden=true;
+}
+function confirmQ(){
+  if(picked<0)return;
+  const q=run[i],ok=picked===q.ans;
+  answers.push({q,picked,ok});
+  [...$("qopts").children].forEach((c,j)=>{c.disabled=true;c.classList.remove("sel");if(j===q.ans)c.classList.add("right");else if(j===picked)c.classList.add("wrong")});
+  const ex=$("qexp");ex.hidden=false;ex.className="exp "+(ok?"ok":"no");
+  ex.innerHTML="<strong></strong> <span></span>";
+  ex.querySelector("strong").textContent=ok?"Acertou.":"Errou. Correta: "+"ABCD"[q.ans]+".";
+  ex.querySelector("span").textContent=q.e;
+  if(q.m){const t=document.createElement("div");t.className="tip";t.innerHTML="<b>Para lembrar</b><span></span>";t.querySelector("span").textContent=q.m;ex.appendChild(t)}
+  $("confirm").hidden=true;$("next").hidden=false;
+  $("next").textContent=i===run.length-1?"Ver resultado →":"Próxima →";
+  $("qbar").style.width=((i+1)/run.length*100)+"%";
+  $("next").focus();
+}
+function nextQ(){ if(i<run.length-1){i++;renderQ();window.scrollTo({top:0,behavior:"smooth"})} else finish() }
+function finish(){
+  if(!answers.length){show("start");renderStart();return}
+  const hit=answers.filter(a=>a.ok).length,tot=answers.length,pct=Math.round(hit/tot*100);
+  $("rscore").textContent=hit+"/"+tot;
+  $("rpct").textContent=pct+"% de acerto";
+  $("rmsg").textContent=pct>=85?"Excelente, está pronto para a prova.":pct>=70?"Bom resultado. Revise os erros abaixo e faça mais uma rodada.":"Vale revisar o resumo nos assuntos com mais erros e refazer as erradas.";
+  const by={};answers.forEach(a=>{[a.q.t,"Nível "+a.q.n].forEach(k=>{by[k]=by[k]||[0,0];by[k][1]++;if(a.ok)by[k][0]++})});
+  $("rstats").innerHTML="";Object.entries(by).forEach(([t,[h,n]])=>{const d=document.createElement("div");d.className="stat";
+    d.innerHTML="<strong></strong><br><span class='muted'></span>";d.querySelector("strong").textContent=t;d.querySelector("span").textContent=h+" de "+n;$("rstats").appendChild(d)});
+  const errs=answers.filter(a=>!a.ok);
+  $("redo").hidden=!errs.length;
+  const box=$("rerrs");box.innerHTML="";
+  if(!errs.length){box.innerHTML="<p><strong>Nenhum erro.</strong> Gabaritou essa rodada.</p>"}
+  else{const h=document.createElement("h2");h.textContent="Revise os erros ("+errs.length+")";box.appendChild(h);
+    errs.forEach(a=>{const d=document.createElement("div");d.className="err";
+      d.innerHTML="<span class='tag'></span><strong></strong><span style='color:var(--bad)'></span><span style='color:var(--ok)'></span><span class='muted'></span><div class='tip'><b>Para lembrar</b><span></span></div>";
+      const s=d.children;s[5].querySelector("span").textContent=a.q.m||"";s[0].textContent=a.q.t+" · "+a.q.n;s[1].textContent=a.q.q;s[2].textContent="Sua resposta: "+a.q.opts[a.picked];s[3].textContent="Correta: "+a.q.opts[a.q.ans];s[4].textContent=a.q.e;box.appendChild(d)})}
+  show("result");
+}
+$("go").onclick=startNew;
+$("confirm").onclick=confirmQ;
+$("next").onclick=nextQ;
+$("quit").onclick=finish;
+$("again").onclick=()=>{show("start");renderStart()};
+$("redo").onclick=()=>begin(build(shuffle(answers.filter(a=>!a.ok).map(a=>BANK.find(b=>b.q===a.q.q)))));
+renderStart();
+</script>
+
+</body>
+</html>
