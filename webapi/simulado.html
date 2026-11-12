@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Simulado Web API: aulas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: uma questão por vez, coluna única; tela inicial com filtros, tela final com revisão dos erros */
+:root{
+  --bg:#f3f6f9; --surface:#ffffff; --surface2:#e9eef4; --fg:#142230; --muted:#4d6073; --line:#d3dce6;
+  --accent:#1f5fbf; --accent-soft:#dbe8fb; --ok:#17784a; --ok-soft:#dcf2e6; --bad:#b42318; --bad-soft:#fbe3e1;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Schibsted Grotesk","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1620; --surface:#15212d; --surface2:#1c2b3a; --fg:#e6eef6; --muted:#9db0c3; --line:#2a3b4d;
+  --accent:#6ea6f5; --accent-soft:#1b3050; --ok:#5fcf96; --ok-soft:#173a2b; --bad:#f08a80; --bad-soft:#3d1c1a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1620; --surface:#15212d; --surface2:#1c2b3a; --fg:#e6eef6; --muted:#9db0c3; --line:#2a3b4d;
+  --accent:#6ea6f5; --accent-soft:#1b3050; --ok:#5fcf96; --ok-soft:#173a2b; --bad:#f08a80; --bad-soft:#3d1c1a; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding-block:36px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1,h2{font-family:var(--display);line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:clamp(2rem,6vw,2.6rem);letter-spacing:-.02em}
+h2{font-size:1.3rem}
+p{margin:0}
+.label{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.muted{color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface2);color:var(--fg);border-radius:999px;padding:8px 14px;font:inherit;font-size:.92rem;cursor:pointer;min-height:40px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#0e1620}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0e1620}}
+.btn{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:var(--accent);color:#fff;min-height:46px}
+:root[data-theme="dark"] .btn{color:#0e1620}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn{color:#0e1620}}
+.btn.sec{background:var(--surface2);color:var(--fg);border:1px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bar{height:8px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+.q{font-family:var(--display);font-size:1.25rem;line-height:1.3}
+pre{margin:0;font-family:var(--mono);font-size:.8rem;line-height:1.45;background:var(--surface2);border-radius:10px;padding:14px;overflow-x:auto;white-space:pre}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{text-align:left;font:inherit;background:var(--surface);color:var(--fg);border:1.5px solid var(--line);border-radius:12px;padding:13px 15px;cursor:pointer;display:flex;gap:12px;align-items:flex-start}
+.opt b{font-family:var(--mono);color:var(--muted);flex:none}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt:disabled{cursor:default}
+.exp{border-radius:12px;padding:14px 16px;background:var(--surface2)}
+.tip{margin-top:10px;border-left:3px solid var(--accent);padding:4px 0 4px 12px}
+.tip b{display:block;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.exp.ok{background:var(--ok-soft)} .exp.no{background:var(--bad-soft)}
+.score{font-family:var(--display);font-size:3rem;line-height:1}
+.err{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:6px}
+.err:first-child{border-top:0;padding-top:0}
+.tag{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.stat{background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:.9rem}
+[hidden]{display:none!important}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+<a href="../" style="color:var(--accent);font-weight:600;text-decoration:none">← Início</a>
+<header style="display:flex;flex-direction:column;gap:10px">
+  <span class="label">Programação Back-End/Web API</span>
+  <h1>Simulado Web API: aulas</h1>
+  <p class="muted">Questões baseadas nos slides e no código das aulas (projeto Acervo, Hello da aula 3, Program.cs e DTOs), para as 10 perguntas do professor. Três níveis, uma questão por vez.</p>
+</header>
+
+<!-- INÍCIO -->
+<section id="start" class="card">
+  <h2>Monte o seu simulado</h2>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <span class="label">Assuntos</span>
+    <div class="chips" id="topics"></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <span class="label">Nível</span>
+    <div class="chips" id="levels"></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <span class="label">Quantidade</span>
+    <div class="chips" id="sizes"></div>
+  </div>
+  <p class="muted" id="avail"></p>
+  <div class="row"><button class="btn" id="go">Começar simulado →</button></div>
+</section>
+
+<!-- QUESTÃO -->
+<section id="quiz" hidden style="display:flex;flex-direction:column;gap:16px">
+  <div class="row" style="justify-content:space-between">
+    <span class="tag" id="qtopic"></span>
+    <span class="muted" id="qcount" style="font-size:.9rem"></span>
+  </div>
+  <div class="bar"><i id="qbar"></i></div>
+  <p class="q" id="qtext"></p>
+  <pre id="qdiag" hidden></pre>
+  <div class="opts" id="qopts"></div>
+  <div class="exp" id="qexp" hidden></div>
+  <div class="row">
+    <button class="btn" id="confirm" disabled>Confirmar</button>
+    <button class="btn" id="next" hidden>Próxima →</button>
+    <button class="btn sec" id="quit" style="margin-left:auto">Encerrar</button>
+  </div>
+</section>
+
+<!-- RESULTADO -->
+<section id="result" hidden style="display:flex;flex-direction:column;gap:18px">
+  <div class="card">
+    <span class="label">Resultado</span>
+    <div class="row" style="align-items:baseline;gap:14px"><span class="score" id="rscore"></span><span class="muted" id="rpct"></span></div>
+    <p id="rmsg"></p>
+    <div class="stats" id="rstats"></div>
+    <div class="row">
+      <button class="btn" id="redo">Refazer as erradas</button>
+      <button class="btn sec" id="again">Novo simulado</button>
+    </div>
+  </div>
+  <div class="card" id="rerrs"></div>
+</section>
+
+</div>
+
+<script>
+const BANK = [
+{"t": "HTTP e REST", "n": "Fácil", "q": "Segundo a aula 1, o que compõe uma requisição e uma resposta HTTP?", "o": ["Requisição: verbo + URL + cabeçalho (+ corpo). Resposta: status + cabeçalho (+ corpo)", "Requisição: status + URL + corpo. Resposta: verbo + cabeçalho (+ corpo)", "Requisição: verbo + status + corpo. Resposta: URL + cabeçalho (+ corpo)", "Requisição: URL + corpo. Resposta: status + verbo + cabeçalho"], "e": "O verbo e a URL só existem na requisição; o status code só existe na resposta. O corpo é opcional nos dois.", "m": "Pedido tem verbo; resposta tem status."},
+{"t": "HTTP e REST", "n": "Fácil", "q": "Na requisição abaixo (aula 2), o que é \"Authorization: Bearer TOKEN\"?", "d": "POST /api/produtos\nContent-Type: application/json\nAuthorization: Bearer TOKEN\n\n{\n  \"nome\": \"Mouse\",\n  \"preco\": 120.00\n}", "o": ["Um header", "O endpoint", "O body", "O método HTTP"], "e": "POST é o método, /api/produtos é o endpoint, Content-Type e Authorization são headers e o JSON é o body.", "m": "Linha chave: valor antes do corpo = header."},
+{"t": "HTTP e REST", "n": "Fácil", "q": "PUT x PATCH, segundo o slide da aula 2:", "o": ["PUT substitui todos os dados e pode criar; PATCH atualiza parte", "PATCH substitui todos os dados e pode criar; PUT atualiza parte", "PUT e PATCH substituem todos os dados do recurso", "PUT só cria recursos; PATCH só exclui recursos"], "e": "PUT manda o recurso inteiro. PATCH manda só o que muda.", "m": "PATCH = remendo."},
+{"t": "HTTP e REST", "n": "Médio", "q": "Na tabela do slide REST (aula 2), o que há de errado na linha POST /api/alunos/10?", "d": "GET    | /api/alunos\nGET    | /api/alunos\nPOST   | /api/alunos/10\nPUT    | /api/alunos/10\nDELETE | /api/alunos/10", "o": ["Criar não leva id na URL: o certo é POST /api/alunos", "Criar usa PUT, não POST: o certo é PUT /api/alunos/10", "Nada: o POST sempre leva na URL o id do novo recurso", "Criar usa GET com corpo: o certo é GET /api/alunos/10"], "e": "No POST o id é gerado pelo banco, então a requisição vai para a coleção. O padrão é GET /api/alunos, GET /api/alunos/10, POST /api/alunos, PUT /api/alunos/10 e DELETE /api/alunos/10 (a segunda linha do slide também deveria ter o /10).", "m": "POST vai na coleção; PUT e DELETE vão no item."},
+{"t": "HTTP e REST", "n": "Médio", "q": "Segundo a aula 4, o que um PUT bem-sucedido pode retornar?", "o": ["200 OK com o objeto ou 204 No Content", "201 Created com o cabeçalho Location", "200 OK sempre, nunca outro código", "204 No Content sempre, nunca outro código"], "e": "O slide diz que o PUT pode retornar 200 com o objeto atualizado ou 204 sem nada. No Acervo, o Alterar retorna Ok(livro).", "m": "Atualizou: 200 com corpo ou 204 sem corpo."},
+{"t": "HTTP e REST", "n": "Médio", "q": "Na aula 2, qual a diferença entre API e WebService?", "o": ["WebService sempre precisa de rede; API pode ser local", "API sempre precisa de rede; WebService pode ser local", "Os dois sempre precisam de rede para funcionar", "Nenhum dos dois precisa de rede para funcionar"], "e": "API é o termo genérico (pode ser uma DLL ou biblioteca local). WebService é o subconjunto de APIs que se comunica obrigatoriamente pela rede.", "m": "Todo WebService é API; nem toda API é WebService."},
+{"t": "HTTP e REST", "n": "Difícil", "q": "Qual afirmação sobre as restrições REST da aula 2 está correta?", "o": ["Código sob demanda é a única restrição opcional", "Cache é a única restrição opcional", "Stateless é a única restrição opcional", "Todas as restrições REST são opcionais para ser RESTful"], "e": "Interface uniforme, cliente-servidor, stateless, cache e sistema em camadas são obrigatórias para ser RESTful. Código sob demanda é opcional.", "m": "Só o código sob demanda é opcional."},
+{"t": "ASP.NET Core", "n": "Fácil", "q": "No Program.cs (aula 3), o que faz app.MapControllers()?", "o": ["Mapeia os endpoints dos controllers", "Inicia o servidor e espera requisições", "Registra os controllers no contêiner", "Constrói a aplicação com os serviços"], "e": "AddControllers registra, Build constrói, MapControllers mapeia os endpoints e Run inicia o servidor.", "m": "Add registra, Map liga as rotas, Run liga o servidor."},
+{"t": "ASP.NET Core", "n": "Fácil", "q": "Com [Route(\"api/[controller]\")] na classe LivrosController, qual é a rota base?", "o": ["api/Livros", "api/LivrosController", "api/[controller]", "api/livro"], "e": "[controller] é trocado pelo nome da classe sem o sufixo Controller.", "m": "[controller] = nome sem o \"Controller\"."},
+{"t": "ASP.NET Core", "n": "Fácil", "q": "No Acervo, onde fica a regra \"não cadastrar dois livros com o mesmo título e autor\"?", "o": ["No LivroService", "No LivrosController", "No LivroCreateDTO", "No AppDbContext"], "e": "Regra de negócio é responsabilidade do Service. O controller só traduz a exceção em status HTTP.", "m": "Regra de negócio mora no Service."},
+{"t": "ASP.NET Core", "n": "Médio", "q": "O que o Post do Acervo retorna quando o livro é cadastrado com sucesso?", "d": "// Acervo · Controllers/LivrosController.cs\n[HttpPost]\npublic async Task\u003cIActionResult> Post([FromBody] LivroCreateDTO livro)\n{\n    try\n    {\n        var livroResponseDTO = await _service.CadastrarAsync(livro);\n\n        return CreatedAtAction\n            (\n                nameof(GetById),\n                new { id = livroResponseDTO.Id },\n                livroResponseDTO\n            );\n    }\n    catch (InvalidOperationException ex)\n    {\n        return BadRequest(new ErroResponseDTO\n        {\n            StatusCode = StatusCodes.Status400BadRequest,\n            Mensagem = ex.Message,\n        });\n    }\n}", "o": ["201 Created, com Location apontando para o GetById", "200 OK, com o livro cadastrado no corpo", "204 No Content, sem corpo na resposta", "201 Created, sem corpo e sem nenhum cabeçalho na resposta"], "e": "CreatedAtAction gera 201, coloca no cabeçalho Location a URL do GetById com o novo id e devolve o livroResponseDTO no corpo.", "m": "CreatedAtAction = 201 + onde encontrar o novo recurso."},
+{"t": "ASP.NET Core", "n": "Médio", "q": "No ProdutosController da aula 3, qual é a resposta de GET /api/produtos/descricao/o?", "d": "// aula03 · Hello/Controllers/ProdutosController.cs\nprivate readonly List\u003cProduto> _produtos = new List\u003cProduto>\n{\n    new Produto { Id = 1, Descricao = \"Bis\", Estoque=500, Valor=10.0 },\n    new Produto { Id = 2, Descricao = \"Sonho de Valsa\", Estoque=15000, Valor=1.5 },\n    new Produto { Id = 3, Descricao = \"Ouro Branco\", Estoque=20000, Valor=1.7 }\n};\n\n[HttpGet(\"descricao/{descricao}\")]\npublic IActionResult ListarPorDescricao(string descricao)\n{\n    var produtos = _produtos.Where(p => p.Descricao.Contains(descricao,\n        StringComparison.OrdinalIgnoreCase)).ToList();\n\n    if (produtos.Count == 0)\n    {\n        return NotFound();\n    }\n\n    return Ok(produtos);\n}", "o": ["200 com Sonho de Valsa e Ouro Branco", "200 com Bis, Sonho de Valsa e Ouro Branco", "200 só com Ouro Branco", "404, porque a busca exige a palavra inteira"], "e": "Contains procura o trecho em qualquer posição, ignorando maiúsculas (OrdinalIgnoreCase). \"Bis\" não tem a letra o.", "m": "Contains = busca parcial."},
+{"t": "ASP.NET Core", "n": "Médio", "q": "Por que, na aula 3, um produto adicionado à lista _produtos do controller sumiria na requisição seguinte?", "d": "// aula03 · Hello/Controllers/ProdutosController.cs\nprivate readonly List\u003cProduto> _produtos = new List\u003cProduto>\n{\n    new Produto { Id = 1, Descricao = \"Bis\", Estoque=500, Valor=10.0 },\n    new Produto { Id = 2, Descricao = \"Sonho de Valsa\", Estoque=15000, Valor=1.5 },\n    new Produto { Id = 3, Descricao = \"Ouro Branco\", Estoque=20000, Valor=1.7 }\n};\n\n[HttpGet(\"descricao/{descricao}\")]\npublic IActionResult ListarPorDescricao(string descricao)\n{\n    var produtos = _produtos.Where(p => p.Descricao.Contains(descricao,\n        StringComparison.OrdinalIgnoreCase)).ToList();\n\n    if (produtos.Count == 0)\n    {\n        return NotFound();\n    }\n\n    return Ok(produtos);\n}", "o": ["O controller é criado de novo a cada requisição", "A lista é readonly e não aceita novos itens", "O ASP.NET apaga as listas ao fim do GET", "Só um POST salvaria, e esse controller não tem nenhum POST"], "e": "Cada requisição cria um novo ProdutosController, com a lista inicial de novo. É o \"problema\" da aula 5 que leva à persistência em banco.", "m": "Dado em memória do controller não sobrevive à requisição."},
+{"t": "ASP.NET Core", "n": "Médio", "q": "O que faz esta linha do Program.cs do Acervo?", "d": "builder.Services.AddScoped\u003cILivroService, LivroService>();", "o": ["Entrega um LivroService a quem pedir ILivroService, um por requisição", "Entrega um LivroService a quem pedir ILivroService, um para a aplicação toda", "Cria uma nova classe LivroService a partir da interface ILivroService", "Registra ILivroService como controller da rota api/LivroService"], "e": "É a injeção de dependência: o controller pede a interface no construtor e recebe a implementação. Scoped = uma instância por requisição.", "m": "Scoped = escopo da requisição."},
+{"t": "ASP.NET Core", "n": "Difícil", "q": "No Post do Acervo, o que acontece se o cliente enviar um CategoriaIds com uma categoria que não existe?", "d": "// Acervo · Controllers/LivrosController.cs\n[HttpPost]\npublic async Task\u003cIActionResult> Post([FromBody] LivroCreateDTO livro)\n{\n    try\n    {\n        var livroResponseDTO = await _service.CadastrarAsync(livro);\n\n        return CreatedAtAction\n            (\n                nameof(GetById),\n                new { id = livroResponseDTO.Id },\n                livroResponseDTO\n            );\n    }\n    catch (InvalidOperationException ex)\n    {\n        return BadRequest(new ErroResponseDTO\n        {\n            StatusCode = StatusCodes.Status400BadRequest,\n            Mensagem = ex.Message,\n        });\n    }\n}\n\n// Acervo · Services/LivroService.cs (CadastrarAsync)\nvar categorias = await _context.Categorias\n    .Where(c => categoriasIds.Contains(c.Id))\n    .ToListAsync();\n\nif (categorias.Count != categoriasIds.Count)\n{\n    throw new ArgumentException(\"Ao menos uma Categoria não existe.\");\n}", "o": ["500, porque o catch só trata InvalidOperationException", "400, com a mensagem \"Ao menos uma Categoria não existe.\"", "409, porque é um conflito de regra de negócio", "404, porque a categoria não foi encontrada"], "e": "O Service lança ArgumentException, mas o controller só captura InvalidOperationException. A exceção não tratada vira 500 Internal Server Error.", "m": "Exceção que ninguém pega = 500."},
+{"t": "ASP.NET Core", "n": "Difícil", "q": "O slide da aula 8 trata livro duplicado com Conflict. O que o Acervo faz no mesmo caso?", "d": "// Acervo · Controllers/LivrosController.cs\n[HttpPost]\npublic async Task\u003cIActionResult> Post([FromBody] LivroCreateDTO livro)\n{\n    try\n    {\n        var livroResponseDTO = await _service.CadastrarAsync(livro);\n\n        return CreatedAtAction\n            (\n                nameof(GetById),\n                new { id = livroResponseDTO.Id },\n                livroResponseDTO\n            );\n    }\n    catch (InvalidOperationException ex)\n    {\n        return BadRequest(new ErroResponseDTO\n        {\n            StatusCode = StatusCodes.Status400BadRequest,\n            Mensagem = ex.Message,\n        });\n    }\n}", "o": ["Retorna 400 Bad Request, porque o catch usa BadRequest", "Retorna 409 Conflict, igual ao slide da aula 8", "Retorna 500, porque a exceção não é capturada", "Retorna 201, porque o Service ignora o livro duplicado"], "e": "No Acervo, o catch de InvalidOperationException devolve BadRequest (400). No slide, o mesmo catch devolve Conflict (409), o código mais adequado para duplicidade.", "m": "Duplicado: slide 409, Acervo 400."},
+{"t": "Entity Framework", "n": "Fácil", "q": "Segundo a aula 5, o que é ORM?", "o": ["Mapeamento entre objetos da aplicação e tabelas do banco", "Mapeamento entre as rotas da API e os métodos do controller", "Mapeamento entre DTOs de entrada e DTOs de resposta", "Mapeamento entre tokens JWT e usuários do banco"], "e": "Object-Relational Mapping: liga o modelo orientado a objetos ao modelo relacional. Classe ↔ tabela, propriedade ↔ coluna.", "m": "Objeto ↔ Relacional."},
+{"t": "Entity Framework", "n": "Fácil", "q": "Qual a ordem dos comandos de migration vistos na aula 5?", "o": ["Add-Migration cria; Update-Database aplica no banco", "Update-Database cria; Add-Migration aplica no banco", "Add-Migration cria e já aplica no banco sozinho", "Update-Database cria a tabela; Add-Migration popula"], "e": "Add-Migration CriarTabelaLivro gera a migração (código). Update-Database executa as migrações pendentes no banco.", "m": "Primeiro escreve (Add), depois aplica (Update)."},
+{"t": "Entity Framework", "n": "Fácil", "q": "O que representa public DbSet\u003cLivro> Livros { get; set; } no AppDbContext?", "o": ["O conjunto de livros, por onde se opera nos registros", "Um único livro carregado do banco de dados", "A string de conexão usada para acessar a tabela de livros", "O DTO usado para devolver livros ao cliente"], "e": "O DbSet representa a tabela. É por ele que se faz ToListAsync, FindAsync, Add e Remove.", "m": "DbSet = a tabela no código."},
+{"t": "Entity Framework", "n": "Médio", "q": "No Acervo, como é o relacionamento entre Livro e Categoria e onde ficam os vínculos?", "d": "// Acervo · Data/AppDbContext.cs\nmodelBuilder.Entity\u003cLivro>()\n    .HasOne(l => l.Autor)\n    .WithMany(a => a.Livros)\n    .HasForeignKey(l => l.AutorId)\n    .OnDelete(DeleteBehavior.Restrict);\n\nmodelBuilder.Entity\u003cLivro>()\n    .HasMany(l => l.Categorias)\n    .WithMany(c => c.Livros);", "o": ["N:N, numa tabela associativa CategoriaLivro", "1:N, numa coluna CategoriaId em Livros", "1:N, numa coluna LivroId em Categorias", "N:N, numa coluna com a lista de ids em Livros"], "e": "HasMany + WithMany cria uma tabela associativa. O script categorialivro.sql insere em CategoriaLivro (CategoriasId, LivrosId).", "m": "Muitos-para-muitos sempre precisa de tabela no meio."},
+{"t": "Entity Framework", "n": "Médio", "q": "Com a configuração abaixo, o que acontece ao tentar excluir um autor que tem livros?", "d": "// Acervo · Data/AppDbContext.cs\nmodelBuilder.Entity\u003cLivro>()\n    .HasOne(l => l.Autor)\n    .WithMany(a => a.Livros)\n    .HasForeignKey(l => l.AutorId)\n    .OnDelete(DeleteBehavior.Restrict);\n\nmodelBuilder.Entity\u003cLivro>()\n    .HasMany(l => l.Categorias)\n    .WithMany(c => c.Livros);", "o": ["A exclusão é impedida", "Os livros do autor são excluídos juntos", "Os livros ficam com AutorId nulo", "O autor é excluído e os livros mantêm o id"], "e": "DeleteBehavior.Restrict impede apagar a entidade principal enquanto houver dependentes. Cascade apagaria os livros; SetNull deixaria a FK nula.", "m": "Restrict = restringe (impede)."},
+{"t": "Entity Framework", "n": "Médio", "q": "Include x Select (aula 9): qual afirmação está correta?", "o": ["Include carrega a entidade com os relacionados; Select projeta só os campos escolhidos", "Select carrega a entidade com os relacionados; Include projeta só os campos escolhidos", "Include e Select só funcionam juntos, na mesma consulta", "Include grava os relacionados; Select apenas os lê"], "e": "O Acervo usa Select para montar o LivroResponseDTO e Include no AlterarAsync, para carregar as Categorias antes de trocá-las.", "m": "Include = traz junto. Select = escolhe o formato."},
+{"t": "Entity Framework", "n": "Difícil", "q": "No ExcluirAsync do Acervo, o que acontece se a linha do SaveChangesAsync for removida?", "d": "// Acervo · Services/LivroService.cs\nvar livro = await _context.Livros.FindAsync(id);\nif (livro == null)\n    return false;\n\n_context.Livros.Remove(livro);\n\nawait _context.SaveChangesAsync();\n\nreturn true;", "o": ["A API devolve 204, mas o livro continua no banco", "A API devolve 404, porque o livro não é removido", "A API devolve 500, porque o Remove exige o Save", "A API devolve 204 e o livro é removido do banco"], "e": "Remove só marca a entidade para exclusão no contexto. Sem SaveChangesAsync, nada é enviado ao banco, mas o método ainda retorna true e o controller responde NoContent.", "m": "Sem SaveChanges, só o contexto fica sabendo."},
+{"t": "Entity Framework", "n": "Difícil", "q": "No AlterarAsync do Acervo, por que o livro é buscado com Include(l => l.Categorias) em vez de FindAsync?", "d": "// Acervo · Services/LivroService.cs (AlterarAsync)\n//var livro = await _context.Livros.FindAsync(id);\nvar livro = await _context.Livros\n    .Include(l => l.Categorias)\n    .FirstOrDefaultAsync(l => l.Id == id);\n...\nlivro.Categorias = categorias;\nawait _context.SaveChangesAsync();", "o": ["Para o EF conhecer as categorias atuais e trocar os vínculos", "Porque FindAsync não funciona com id do tipo int", "Porque o FirstOrDefaultAsync é sempre mais rápido que o FindAsync", "Para não carregar o autor junto com o livro"], "e": "FindAsync não carrega a coleção. Com o Include, o EF sabe quais vínculos existem na CategoriaLivro e consegue remover os antigos e inserir os novos.", "m": "Para alterar o relacionamento, carregue o relacionamento."},
+{"t": "Filtros e validação", "n": "Fácil", "q": "Route parameter x query parameter (aula 7): qual é o uso típico de cada um?", "o": ["Rota identifica um recurso; query filtra, ordena e pagina", "Query identifica um recurso; rota filtra, ordena e pagina", "Rota e query servem só para identificar um recurso", "Rota e query servem só para enviar o corpo do POST"], "e": "GET /api/livros/1 aponta um livro. GET /api/livros?autor=machado filtra a coleção.", "m": "Rota = qual. Query = como filtrar."},
+{"t": "Filtros e validação", "n": "Fácil", "q": "Segundo a aula 7, qual status um filtro que não encontra nenhum item deve devolver?", "o": ["200 OK com lista vazia []", "404 Not Found sem corpo", "204 No Content sem corpo", "400 Bad Request com mensagem"], "e": "Coleção filtrada vazia não é erro. 404 é para um recurso específico inexistente, como /api/livros/999.", "m": "Lista vazia ainda é uma lista: 200."},
+{"t": "Filtros e validação", "n": "Médio", "q": "Com o filtro do Acervo, o que GET /api/livros?anoInicio=1800&anoFim=1900&ordenarPor=TITULO retorna?", "d": "// Acervo · Services/LivroService.cs (ListarAsync)\nvar query = _context.Livros.AsQueryable();\n\nif (!string.IsNullOrWhiteSpace(filtro.Titulo))\n    query = query.Where(l => l.Titulo.Contains(filtro.Titulo));\n\nif (filtro.AnoInicio.HasValue)\n    query = query.Where(l => l.AnoPublicacao >= filtro.AnoInicio.Value);\n\nif (filtro.AnoFim.HasValue)\n    query = query.Where(l => l.AnoPublicacao \u003c= filtro.AnoFim.Value);\n\nif (!string.IsNullOrWhiteSpace(filtro.OrdenarPor))\n{\n    switch (filtro.OrdenarPor.ToLower())\n    {\n        case \"titulo\": query = query.OrderBy(l => l.Titulo); break;\n        case \"anopublicacao\": query = query.OrderBy(l => l.AnoPublicacao); break;\n        case \"autor\": query = query.OrderBy(l => l.Autor.Nome); break;\n        default: break;\n    }\n}\n\nreturn await query.Select(l => new LivroResponseDTO { ... }).ToListAsync();", "o": ["Livros de 1800 a 1900, em ordem de título", "Livros de 1800 a 1900, sem ordenação", "Livros de 1800 a 1900, em ordem de ano", "Todos os livros, em ordem de título, ignorando os anos"], "e": "Os dois limites viram Where com >= e \u003c=. ToLower transforma TITULO em titulo, que cai no case de ordenação por título.", "m": "ToLower deixa a ordenação aceitar maiúsculas."},
+{"t": "Filtros e validação", "n": "Médio", "q": "No ListarAsync do Acervo, em que momento a consulta vai de fato ao banco?", "d": "// Acervo · Services/LivroService.cs (ListarAsync)\nvar query = _context.Livros.AsQueryable();\n\nif (!string.IsNullOrWhiteSpace(filtro.Titulo))\n    query = query.Where(l => l.Titulo.Contains(filtro.Titulo));\n\nif (filtro.AnoInicio.HasValue)\n    query = query.Where(l => l.AnoPublicacao >= filtro.AnoInicio.Value);\n\nif (filtro.AnoFim.HasValue)\n    query = query.Where(l => l.AnoPublicacao \u003c= filtro.AnoFim.Value);\n\nif (!string.IsNullOrWhiteSpace(filtro.OrdenarPor))\n{\n    switch (filtro.OrdenarPor.ToLower())\n    {\n        case \"titulo\": query = query.OrderBy(l => l.Titulo); break;\n        case \"anopublicacao\": query = query.OrderBy(l => l.AnoPublicacao); break;\n        case \"autor\": query = query.OrderBy(l => l.Autor.Nome); break;\n        default: break;\n    }\n}\n\nreturn await query.Select(l => new LivroResponseDTO { ... }).ToListAsync();", "o": ["No ToListAsync", "No AsQueryable", "Em cada Where", "No OrderBy"], "e": "AsQueryable, Where e OrderBy só montam a consulta (execução adiada). O SQL é gerado e executado no ToListAsync.", "m": "IQueryable monta; ToList executa."},
+{"t": "Filtros e validação", "n": "Médio", "q": "Os três momentos de validação da aula 8, na ordem:", "o": ["Estrutura/tipo, Data Annotations do DTO, regra de negócio no Service", "Regra de negócio no Service, Data Annotations do DTO, estrutura/tipo", "Data Annotations do DTO, estrutura/tipo, regra de negócio no Service", "Estrutura/tipo, regra de negócio no Service, Data Annotations do DTO"], "e": "Primeiro o ASP.NET Core desserializa (tipo errado falha aqui), depois valida as annotations e só então o Service aplica as regras.", "m": "Formato, depois regras do DTO, depois regras do negócio."},
+{"t": "Filtros e validação", "n": "Médio", "q": "Um POST para api/livros chega com \"anoPublicacao\": 3000. O que acontece, com [ApiController] e o DTO do Acervo?", "d": "// Acervo · DTOS/Livro/LivroCreateDTO.cs\npublic class LivroCreateDTO\n{\n    [Required(ErrorMessage = \"O campo Titulo é obrigatório.\")]\n    public string Titulo { get; set; } = string.Empty;\n    [Required(ErrorMessage = \"O campo AutorId é obrigatório.\")]\n    public int AutorId { get; set; }\n    [Range(1, 2500, ErrorMessage = \"O ano de publicação deve estar entre 1 e 2500.\")]\n    public int AnoPublicacao { get; set; }\n    public List\u003cint> CategoriaIds { get; set; } = null!;\n}", "o": ["400 automático, antes de o método Post rodar", "O Post roda e o Service devolve 400", "O Post roda e o livro é salvo com 3000", "500, porque o Range lança uma exceção não tratada"], "e": "O [Range(1, 2500)] falha na validação do modelo. Com [ApiController], o ASP.NET Core responde 400 sozinho e a action nem é executada.", "m": "[ApiController] barra antes da action."},
+{"t": "Filtros e validação", "n": "Difícil", "q": "O JSON abaixo é enviado ao POST do Acervo, sem o campo autorId. O que acontece?", "d": "// Acervo · DTOS/Livro/LivroCreateDTO.cs\npublic class LivroCreateDTO\n{\n    [Required(ErrorMessage = \"O campo Titulo é obrigatório.\")]\n    public string Titulo { get; set; } = string.Empty;\n    [Required(ErrorMessage = \"O campo AutorId é obrigatório.\")]\n    public int AutorId { get; set; }\n    [Range(1, 2500, ErrorMessage = \"O ano de publicação deve estar entre 1 e 2500.\")]\n    public int AnoPublicacao { get; set; }\n    public List\u003cint> CategoriaIds { get; set; } = null!;\n}\n\n// corpo enviado\n{ \"titulo\": \"Novo livro\", \"anoPublicacao\": 2020, \"categoriaIds\": [] }", "o": ["O [Required] não barra; o Service não acha o autor 0 e responde 400", "O [Required] barra e o [ApiController] responde 400 sozinho", "O livro é salvo com AutorId 0 e a API responde 201", "O banco recusa a chave estrangeira inválida e a API responde 500"], "e": "int não pode ser null: sem o campo, vale 0, e o [Required] considera preenchido. O Service lança InvalidOperationException (\"Não existe autor com esse ID.\"), que o controller transforma em 400.", "m": "[Required] em int não funciona: use int?."},
+{"t": "Filtros e validação", "n": "Difícil", "q": "No InvalidModelStateResponseFactory da aula 8, o que vai no dicionário Erros?", "d": "// aula08 · Program.cs\nbuilder.Services\n    .AddControllers()\n    .ConfigureApiBehaviorOptions(options =>\n    {\n        options.InvalidModelStateResponseFactory = context =>\n        {\n            var erros = context.ModelState\n            .Where(x => x.Value?.Errors.Count > 0)\n            .ToDictionary(\n                x => x.Key,\n                x => x.Value!.Errors\n                    .Select(e =>\n                        string.IsNullOrWhiteSpace(e.ErrorMessage)\n                            ? \"Valor inválido.\"\n                            : e.ErrorMessage)\n                    .ToArray()\n            );\n            var resposta = new ErroResponseDTO\n            {\n                Status = StatusCodes.Status400BadRequest,\n                Mensagem = \"Um ou mais campos são inválidos.\",\n                Erros = erros,\n            };\n\n            return new BadRequestObjectResult(resposta);\n        };\n    });", "o": ["Cada campo inválido e a lista das suas mensagens", "Só o primeiro campo inválido e a sua mensagem", "Todos os campos do DTO, válidos ou não, com as mensagens", "O status 400 e a mensagem geral da resposta"], "e": "O Where pega só as entradas do ModelState com erro. ToDictionary usa o nome do campo como chave e um array de mensagens como valor; mensagem vazia vira \"Valor inválido.\".", "m": "Chave = campo. Valor = mensagens."},
+{"t": "JWT e Angular", "n": "Fácil", "q": "Autenticação x autorização (aula 10):", "o": ["Autenticação: quem é você. Autorização: o que você pode fazer", "Autorização: quem é você. Autenticação: o que você pode fazer", "As duas perguntam quem é você, em momentos diferentes", "As duas perguntam o que você pode fazer na API"], "e": "Primeiro se identifica o usuário (autenticação), depois se verifica a permissão (autorização).", "m": "Autenticar = identificar. Autorizar = permitir."},
+{"t": "JWT e Angular", "n": "Fácil", "q": "Quais são as três partes de um JWT?", "o": ["Header, Payload e Signature", "Header, Body e Footer", "Token, Claims e Secret", "Login, Senha e Chave"], "e": "As três partes são separadas por ponto: header.payload.signature.", "m": "Cabeça, carga e assinatura."},
+{"t": "JWT e Angular", "n": "Médio", "q": "Um usuário comum envia um token válido para um DELETE que exige administrador. Qual status?", "o": ["403 Forbidden", "401 Unauthorized", "400 Bad Request", "404 Not Found"], "e": "Ele está autenticado (token válido), mas não tem permissão. É o exemplo do slide para o 403.", "m": "Sei quem é, mas não pode: 403."},
+{"t": "JWT e Angular", "n": "Médio", "q": "O token chega expirado ou com o payload alterado. Qual status, segundo a aula 10?", "o": ["401 nos dois casos", "403 nos dois casos", "401 se expirado; 403 se alterado", "403 se expirado; 401 se alterado"], "e": "Os slides de Signature e Tempo de Expiração dizem: token alterado ou expirado deve devolver 401.", "m": "Token que não vale = não autenticado = 401."},
+{"t": "JWT e Angular", "n": "Difícil", "q": "Para que serve a Signature do JWT?", "o": ["Verificar se o token foi alterado", "Esconder os dados do payload", "Guardar a data de expiração do token", "Identificar o tipo do token"], "e": "A assinatura é calculada com header + payload + chave secreta. Se alguém mexer no payload, a assinatura não bate. Ela não esconde nada: o payload continua legível.", "m": "Assinatura garante integridade, não sigilo."},
+{"t": "JWT e Angular", "n": "Difícil", "q": "Ao adicionar JWT ao Acervo, o que falta no pipeline do Program.cs atual?", "d": "// Acervo · Program.cs (trecho)\nbuilder.Services.AddDbContext\u003cAppDbContext>(options =>\n    options.UseSqlServer(\n        builder.Configuration.GetConnectionString(\"DefaultConnection\")));\n\nbuilder.Services.AddScoped\u003cILivroService, LivroService>();\n\nvar app = builder.Build();\n\napp.UseHttpsRedirection();\napp.UseAuthorization();\napp.MapControllers();\napp.Run();", "o": ["app.UseAuthentication() antes do UseAuthorization()", "app.UseAuthorization() antes do UseHttpsRedirection()", "app.UseAuthentication() depois do MapControllers()", "Nada, o UseAuthorization() já valida o token"], "e": "O Acervo só tem UseAuthorization. Para validar o JWT é preciso registrar AddAuthentication().AddJwtBearer(...) e colocar UseAuthentication antes de UseAuthorization.", "m": "Primeiro descobre quem é, depois decide o que pode."}
+];
+
+
+// ---------- estado ----------
+const TOPICS=[...new Set(BANK.map(x=>x.t))];
+const SIZES=[10,25,"Todas"];
+const LEVELS=["Fácil","Médio","Difícil"];
+let selLevels=new Set(LEVELS), selTopics=new Set(TOPICS), selSize=25, run=[], i=0, picked=-1, answers=[];
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]]}return a};
+
+function renderStart(){
+  $("topics").innerHTML="";
+  TOPICS.forEach(t=>{const b=document.createElement("button");b.className="chip";b.textContent=t+" ("+BANK.filter(x=>x.t===t).length+")";
+    b.setAttribute("aria-pressed",selTopics.has(t));b.onclick=()=>{selTopics.has(t)?selTopics.delete(t):selTopics.add(t);renderStart()};$("topics").appendChild(b)});
+  $("levels").innerHTML="";
+  LEVELS.forEach(l=>{const b=document.createElement("button");b.className="chip";b.textContent=l+" ("+BANK.filter(x=>x.n===l&&selTopics.has(x.t)).length+")";
+    b.setAttribute("aria-pressed",selLevels.has(l));b.onclick=()=>{selLevels.has(l)?selLevels.delete(l):selLevels.add(l);renderStart()};$("levels").appendChild(b)});
+  $("sizes").innerHTML="";
+  SIZES.forEach(s=>{const b=document.createElement("button");b.className="chip";b.textContent=s;b.setAttribute("aria-pressed",selSize===s);
+    b.onclick=()=>{selSize=s;renderStart()};$("sizes").appendChild(b)});
+  const n=BANK.filter(x=>selTopics.has(x.t)&&selLevels.has(x.n)).length;
+  $("avail").textContent=n?n+" questões disponíveis nos assuntos e níveis escolhidos.":"Escolha pelo menos um assunto e um nível.";
+  $("go").disabled=!n;
+}
+function build(pool){
+  return pool.map(x=>{const idx=shuffle([0,1,2,3]);return {...x,opts:idx.map(k=>x.o[k]),ans:idx.indexOf(0)}});
+}
+function begin(pool){
+  run=pool;i=0;answers=[];
+  show("quiz");renderQ();
+}
+function startNew(){
+  let pool=shuffle(BANK.filter(x=>selTopics.has(x.t)&&selLevels.has(x.n)));
+  // garante questões com diagrama no simulado quando possível
+  const n=selSize==="Todas"?pool.length:Math.min(selSize,pool.length);
+  const diag=pool.filter(x=>x.d), rest=pool.filter(x=>!x.d);
+  let pick=diag.slice(0,Math.min(2,n)); pick=pick.concat(rest.slice(0,n-pick.length));
+  if(pick.length<n) pick=pick.concat(diag.slice(2,2+n-pick.length));
+  begin(build(shuffle(pick)));
+}
+function show(id){["start","quiz","result"].forEach(s=>$(s).hidden=s!==id);window.scrollTo({top:0,behavior:"smooth"})}
+function renderQ(){
+  const q=run[i];picked=-1;
+  $("qtopic").textContent=q.t+" · "+q.n;
+  $("qcount").textContent="Questão "+(i+1)+" de "+run.length;
+  $("qbar").style.width=(i/run.length*100)+"%";
+  $("qtext").textContent=q.q;
+  $("qdiag").hidden=!q.d; $("qdiag").textContent=q.d||"";
+  $("qopts").innerHTML="";
+  q.opts.forEach((o,k)=>{const b=document.createElement("button");b.className="opt";
+    b.innerHTML="<b>"+"ABCD"[k]+"</b><span></span>";b.querySelector("span").textContent=o;
+    b.onclick=()=>{picked=k;[...$("qopts").children].forEach((c,j)=>c.classList.toggle("sel",j===k));$("confirm").disabled=false};
+    $("qopts").appendChild(b)});
+  $("qexp").hidden=true;$("confirm").hidden=false;$("confirm").disabled=true;$("next").hidden=true;
+}
+function confirmQ(){
+  if(picked<0)return;
+  const q=run[i],ok=picked===q.ans;
+  answers.push({q,picked,ok});
+  [...$("qopts").children].forEach((c,j)=>{c.disabled=true;c.classList.remove("sel");if(j===q.ans)c.classList.add("right");else if(j===picked)c.classList.add("wrong")});
+  const ex=$("qexp");ex.hidden=false;ex.className="exp "+(ok?"ok":"no");
+  ex.innerHTML="<strong></strong> <span></span>";
+  ex.querySelector("strong").textContent=ok?"Acertou.":"Errou. Correta: "+"ABCD"[q.ans]+".";
+  ex.querySelector("span").textContent=q.e;
+  if(q.m){const t=document.createElement("div");t.className="tip";t.innerHTML="<b>Para lembrar</b><span></span>";t.querySelector("span").textContent=q.m;ex.appendChild(t)}
+  $("confirm").hidden=true;$("next").hidden=false;
+  $("next").textContent=i===run.length-1?"Ver resultado →":"Próxima →";
+  $("qbar").style.width=((i+1)/run.length*100)+"%";
+  $("next").focus();
+}
+function nextQ(){ if(i<run.length-1){i++;renderQ();window.scrollTo({top:0,behavior:"smooth"})} else finish() }
+function finish(){
+  if(!answers.length){show("start");renderStart();return}
+  const hit=answers.filter(a=>a.ok).length,tot=answers.length,pct=Math.round(hit/tot*100);
+  $("rscore").textContent=hit+"/"+tot;
+  $("rpct").textContent=pct+"% de acerto";
+  $("rmsg").textContent=pct>=85?"Excelente, está pronto para a prova.":pct>=70?"Bom resultado. Revise os erros abaixo e faça mais uma rodada.":"Vale revisar o resumo nos assuntos com mais erros e refazer as erradas.";
+  const by={};answers.forEach(a=>{[a.q.t,"Nível "+a.q.n].forEach(k=>{by[k]=by[k]||[0,0];by[k][1]++;if(a.ok)by[k][0]++})});
+  $("rstats").innerHTML="";Object.entries(by).forEach(([t,[h,n]])=>{const d=document.createElement("div");d.className="stat";
+    d.innerHTML="<strong></strong><br><span class='muted'></span>";d.querySelector("strong").textContent=t;d.querySelector("span").textContent=h+" de "+n;$("rstats").appendChild(d)});
+  const errs=answers.filter(a=>!a.ok);
+  $("redo").hidden=!errs.length;
+  const box=$("rerrs");box.innerHTML="";
+  if(!errs.length){box.innerHTML="<p><strong>Nenhum erro.</strong> Gabaritou essa rodada.</p>"}
+  else{const h=document.createElement("h2");h.textContent="Revise os erros ("+errs.length+")";box.appendChild(h);
+    errs.forEach(a=>{const d=document.createElement("div");d.className="err";
+      d.innerHTML="<span class='tag'></span><strong></strong><span style='color:var(--bad)'></span><span style='color:var(--ok)'></span><span class='muted'></span><div class='tip'><b>Para lembrar</b><span></span></div>";
+      const s=d.children;s[5].querySelector("span").textContent=a.q.m||"";s[0].textContent=a.q.t+" · "+a.q.n;s[1].textContent=a.q.q;s[2].textContent="Sua resposta: "+a.q.opts[a.picked];s[3].textContent="Correta: "+a.q.opts[a.q.ans];s[4].textContent=a.q.e;box.appendChild(d)})}
+  show("result");
+}
+$("go").onclick=startNew;
+$("confirm").onclick=confirmQ;
+$("next").onclick=nextQ;
+$("quit").onclick=finish;
+$("again").onclick=()=>{show("start");renderStart()};
+$("redo").onclick=()=>begin(build(shuffle(answers.filter(a=>!a.ok).map(a=>BANK.find(b=>b.q===a.q.q)))));
+renderStart();
+</script>
+
+</body>
+</html>

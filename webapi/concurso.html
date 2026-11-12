@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Simulado Web API: concurso</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: uma questão por vez, coluna única; tela inicial com filtros, tela final com revisão dos erros */
+:root{
+  --bg:#f3f6f9; --surface:#ffffff; --surface2:#e9eef4; --fg:#142230; --muted:#4d6073; --line:#d3dce6;
+  --accent:#1f5fbf; --accent-soft:#dbe8fb; --ok:#17784a; --ok-soft:#dcf2e6; --bad:#b42318; --bad-soft:#fbe3e1;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Schibsted Grotesk","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1620; --surface:#15212d; --surface2:#1c2b3a; --fg:#e6eef6; --muted:#9db0c3; --line:#2a3b4d;
+  --accent:#6ea6f5; --accent-soft:#1b3050; --ok:#5fcf96; --ok-soft:#173a2b; --bad:#f08a80; --bad-soft:#3d1c1a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1620; --surface:#15212d; --surface2:#1c2b3a; --fg:#e6eef6; --muted:#9db0c3; --line:#2a3b4d;
+  --accent:#6ea6f5; --accent-soft:#1b3050; --ok:#5fcf96; --ok-soft:#173a2b; --bad:#f08a80; --bad-soft:#3d1c1a; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding-block:36px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1,h2{font-family:var(--display);line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:clamp(2rem,6vw,2.6rem);letter-spacing:-.02em}
+h2{font-size:1.3rem}
+p{margin:0}
+.label{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.muted{color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface2);color:var(--fg);border-radius:999px;padding:8px 14px;font:inherit;font-size:.92rem;cursor:pointer;min-height:40px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#0e1620}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0e1620}}
+.btn{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:var(--accent);color:#fff;min-height:46px}
+:root[data-theme="dark"] .btn{color:#0e1620}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn{color:#0e1620}}
+.btn.sec{background:var(--surface2);color:var(--fg);border:1px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bar{height:8px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+.q{font-family:var(--display);font-size:1.25rem;line-height:1.3}
+pre{margin:0;font-family:var(--mono);font-size:.8rem;line-height:1.45;background:var(--surface2);border-radius:10px;padding:14px;overflow-x:auto;white-space:pre}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{text-align:left;font:inherit;background:var(--surface);color:var(--fg);border:1.5px solid var(--line);border-radius:12px;padding:13px 15px;cursor:pointer;display:flex;gap:12px;align-items:flex-start}
+.opt b{font-family:var(--mono);color:var(--muted);flex:none}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt:disabled{cursor:default}
+.exp{border-radius:12px;padding:14px 16px;background:var(--surface2)}
+.tip{margin-top:10px;border-left:3px solid var(--accent);padding:4px 0 4px 12px}
+.tip b{display:block;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.exp.ok{background:var(--ok-soft)} .exp.no{background:var(--bad-soft)}
+.score{font-family:var(--display);font-size:3rem;line-height:1}
+.err{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:6px}
+.err:first-child{border-top:0;padding-top:0}
+.tag{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.stat{background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:.9rem}
+[hidden]{display:none!important}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+<a href="../" style="color:var(--accent);font-weight:600;text-decoration:none">← Início</a>
+<header style="display:flex;flex-direction:column;gap:10px">
+  <span class="label">Programação Back-End/Web API</span>
+  <h1>Simulado Web API: concurso</h1>
+  <p class="muted">Questões no estilo de concurso público de TI (FCC, FGV e Cebraspe) sobre HTTP, REST, SOAP, ASP.NET Core, C#, Entity Framework, JWT e Angular, para as outras 10 perguntas da prova.</p>
+</header>
+
+<!-- INÍCIO -->
+<section id="start" class="card">
+  <h2>Monte o seu simulado</h2>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <span class="label">Assuntos</span>
+    <div class="chips" id="topics"></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <span class="label">Nível</span>
+    <div class="chips" id="levels"></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <span class="label">Quantidade</span>
+    <div class="chips" id="sizes"></div>
+  </div>
+  <p class="muted" id="avail"></p>
+  <div class="row"><button class="btn" id="go">Começar simulado →</button></div>
+</section>
+
+<!-- QUESTÃO -->
+<section id="quiz" hidden style="display:flex;flex-direction:column;gap:16px">
+  <div class="row" style="justify-content:space-between">
+    <span class="tag" id="qtopic"></span>
+    <span class="muted" id="qcount" style="font-size:.9rem"></span>
+  </div>
+  <div class="bar"><i id="qbar"></i></div>
+  <p class="q" id="qtext"></p>
+  <pre id="qdiag" hidden></pre>
+  <div class="opts" id="qopts"></div>
+  <div class="exp" id="qexp" hidden></div>
+  <div class="row">
+    <button class="btn" id="confirm" disabled>Confirmar</button>
+    <button class="btn" id="next" hidden>Próxima →</button>
+    <button class="btn sec" id="quit" style="margin-left:auto">Encerrar</button>
+  </div>
+</section>
+
+<!-- RESULTADO -->
+<section id="result" hidden style="display:flex;flex-direction:column;gap:18px">
+  <div class="card">
+    <span class="label">Resultado</span>
+    <div class="row" style="align-items:baseline;gap:14px"><span class="score" id="rscore"></span><span class="muted" id="rpct"></span></div>
+    <p id="rmsg"></p>
+    <div class="stats" id="rstats"></div>
+    <div class="row">
+      <button class="btn" id="redo">Refazer as erradas</button>
+      <button class="btn sec" id="again">Novo simulado</button>
+    </div>
+  </div>
+  <div class="card" id="rerrs"></div>
+</section>
+
+</div>
+
+<script>
+const BANK = [
+{"t": "HTTP e REST", "n": "Fácil", "q": "(Estilo FCC) No protocolo HTTP, os códigos de status da classe 4xx indicam:", "o": ["erro causado pela requisição do cliente", "erro interno ocorrido no servidor da aplicação", "redirecionamento para outro endereço", "sucesso no processamento da requisição"], "e": "1xx informativo, 2xx sucesso, 3xx redirecionamento, 4xx erro do cliente, 5xx erro do servidor.", "m": "4 = você errou. 5 = o servidor errou."},
+{"t": "HTTP e REST", "n": "Fácil", "q": "(Estilo FGV) Em uma API RESTful, a requisição que cria um novo recurso deve usar, preferencialmente, o método:", "o": ["POST", "PUT", "GET", "PATCH"], "e": "POST cria um recurso numa coleção (POST /api/livros). PUT é usado para substituir um recurso identificado.", "m": "Criar = POST."},
+{"t": "HTTP e REST", "n": "Fácil", "q": "(Estilo Cebraspe) Julgue: o código 201 indica que a requisição foi bem-sucedida e resultou na criação de um novo recurso.", "o": ["Certo, 201 Created indica recurso criado", "Errado, isso é o 200 OK, com o recurso no corpo", "Errado, isso é o 202 Accepted", "Errado, isso é o 204 No Content"], "e": "201 Created. O 200 é sucesso genérico, o 202 é aceito para processamento posterior e o 204 é sucesso sem corpo.", "m": "201 = criado."},
+{"t": "HTTP e REST", "n": "Médio", "q": "(Estilo FCC) Um método HTTP é idempotente quando várias requisições idênticas produzem o mesmo efeito que uma só. Qual método NÃO é idempotente?", "o": ["POST", "PUT", "DELETE", "GET"], "e": "Repetir um POST cria vários recursos. GET, PUT e DELETE deixam o servidor no mesmo estado final, mesmo repetidos.", "m": "POST repetido = registros repetidos."},
+{"t": "HTTP e REST", "n": "Médio", "q": "(Estilo Cebraspe) Julgue: na arquitetura REST, o servidor deve guardar o estado da sessão do cliente entre as requisições, para que cada nova chamada possa ser processada.", "o": ["Errado, cada requisição deve trazer tudo o que é necessário", "Certo, o servidor guarda a sessão para dar contexto", "Certo, desde que a sessão fique guardada num cache intermediário", "Errado, quem guarda a sessão é o banco de dados"], "e": "A restrição stateless exige que cada requisição seja autossuficiente. O servidor não depende de estado guardado de chamadas anteriores.", "m": "REST não tem memória entre requisições."},
+{"t": "HTTP e REST", "n": "Médio", "q": "(Estilo FGV) Sobre SOAP e REST, assinale a alternativa correta.", "o": ["SOAP usa mensagens XML; REST pode usar JSON, XML e outros formatos", "SOAP pode usar JSON; REST usa obrigatoriamente mensagens XML", "SOAP e REST usam obrigatoriamente o formato JSON", "SOAP é um estilo arquitetural leve; REST é um protocolo baseado em XML"], "e": "SOAP é um protocolo baseado em XML (envelope) e descrito em WSDL. REST é um estilo arquitetural e não impõe formato.", "m": "SOAP = protocolo XML. REST = estilo, formato livre."},
+{"t": "HTTP e REST", "n": "Médio", "q": "(Estilo FCC) No contexto de web services SOAP, o documento que descreve as operações oferecidas pelo serviço é o:", "o": ["WSDL", "JSON", "JWT", "CORS"], "e": "WSDL (Web Services Description Language) é o contrato do serviço SOAP: operações, mensagens e endereço.", "m": "WSDL = descrição do serviço."},
+{"t": "HTTP e REST", "n": "Difícil", "q": "(Estilo Cebraspe) Julgue: segundo a especificação HTTP, os métodos GET e HEAD são considerados seguros, pois não devem alterar o estado do servidor.", "o": ["Certo, métodos seguros só leem o recurso", "Errado, só o GET é considerado seguro", "Errado, só o HEAD é considerado seguro", "Errado, todo método HTTP altera o estado"], "e": "Métodos seguros (GET, HEAD, OPTIONS) só leem. Todo método seguro é idempotente, mas nem todo idempotente é seguro (PUT e DELETE alteram).", "m": "Seguro = só leitura."},
+{"t": "HTTP e REST", "n": "Difícil", "q": "(Estilo FGV) A restrição REST que permite ao servidor estender o cliente enviando scripts para execução, e que é a única opcional, é:", "o": ["código sob demanda", "sistema em camadas", "interface uniforme", "armazenamento em cache"], "e": "Code on demand é opcional. As demais são obrigatórias para uma API ser RESTful.", "m": "Código sob demanda: a opcional."},
+{"t": "ASP.NET Core", "n": "Fácil", "q": "(Estilo FCC) Em C#, a declaração int? idade = null; indica que:", "o": ["idade é um inteiro que aceita null", "idade é um inteiro sempre positivo", "idade é uma referência a um objeto int", "idade será inferida em tempo de execução"], "e": "O ? cria um tipo anulável (Nullable\u003cint>). Usa-se HasValue para testar e Value para ler, como no LivroFilterDTO.", "m": "? depois do tipo = pode ser null."},
+{"t": "ASP.NET Core", "n": "Fácil", "q": "(Estilo FGV) No ASP.NET Core, qual atributo indica que um parâmetro da action deve ser lido da query string?", "o": ["[FromQuery]", "[FromBody]", "[FromRoute]", "[FromHeader]"], "e": "[FromQuery] lê de ?chave=valor. [FromBody] lê do corpo, [FromRoute] do caminho e [FromHeader] dos cabeçalhos.", "m": "Query = depois do ?."},
+{"t": "ASP.NET Core", "n": "Médio", "q": "(Estilo Cebraspe) Julgue: no ASP.NET Core, um serviço registrado com AddScoped tem uma única instância compartilhada por toda a aplicação.", "o": ["Errado, essa é a descrição do AddSingleton", "Certo, Scoped e Singleton são equivalentes", "Errado, essa é a descrição do AddTransient", "Certo, desde que o serviço seja uma interface"], "e": "Transient: nova a cada pedido. Scoped: uma por requisição. Singleton: uma para a aplicação inteira.", "m": "Singleton = uma só. Scoped = uma por requisição."},
+{"t": "ASP.NET Core", "n": "Médio", "q": "(Estilo FCC) Em programação orientada a objetos, uma interface em C# como ILivroService:", "o": ["define um contrato que as classes implementam", "guarda o estado compartilhado entre as classes", "é instanciada diretamente com o operador new", "herda a implementação de uma classe concreta"], "e": "A interface só declara os métodos. LivroService implementa o contrato, e o controller depende só da interface (baixo acoplamento).", "m": "Interface = contrato."},
+{"t": "ASP.NET Core", "n": "Médio", "q": "(Estilo FGV) Em uma API ASP.NET Core, o atributo [ApiController] aplicado a um controller:", "o": ["faz falhas de validação do modelo retornarem 400 automaticamente", "faz todas as actions do controller exigirem um token JWT válido", "faz as rotas serem geradas pelo nome dos métodos", "faz o controller ser criado uma vez por aplicação"], "e": "[ApiController] ativa a resposta automática 400 para ModelState inválido, além de inferir [FromBody] e exigir roteamento por atributo.", "m": "[ApiController] = validação automática."},
+{"t": "ASP.NET Core", "n": "Difícil", "q": "(Estilo Cebraspe) Julgue: em C#, o uso de async e await em uma action faz a requisição ser processada em paralelo por várias threads, reduzindo o tempo de cada consulta ao banco.", "o": ["Errado, ele libera a thread enquanto espera, sem acelerar a consulta", "Certo, cada await abre uma nova thread dedicada para executar a consulta", "Certo, o await divide a consulta em partes paralelas", "Errado, async e await só funcionam em aplicações de desktop"], "e": "O await não deixa a consulta mais rápida: ele libera a thread enquanto a operação de I/O não termina, para o servidor atender outras requisições.", "m": "Async = não ficar parado esperando."},
+{"t": "ASP.NET Core", "n": "Difícil", "q": "(Estilo FCC) Sobre os pilares da POO, a possibilidade de LivroService ser usado onde se espera um ILivroService exemplifica:", "o": ["polimorfismo", "encapsulamento", "herança múltipla", "sobrecarga de operadores"], "e": "Uma referência do tipo da interface pode apontar para qualquer implementação. O comportamento executado depende do objeto real: polimorfismo.", "m": "Muitas formas atrás do mesmo contrato."},
+{"t": "Entity Framework", "n": "Fácil", "q": "(Estilo FGV) Ferramentas ORM, como o Entity Framework Core, têm como objetivo principal:", "o": ["mapear objetos da aplicação para tabelas relacionais", "converter as requisições HTTP REST em chamadas SOAP equivalentes", "gerar as telas do front-end a partir do banco", "autenticar usuários por meio de tokens"], "e": "O ORM reduz a distância entre o modelo de objetos e o modelo relacional, gerando o SQL a partir do código.", "m": "ORM = objeto ↔ tabela."},
+{"t": "Entity Framework", "n": "Médio", "q": "(Estilo Cebraspe) Julgue: no Entity Framework Core, as alterações feitas em entidades rastreadas pelo DbContext só são gravadas no banco quando SaveChanges ou SaveChangesAsync é chamado.", "o": ["Certo, o contexto só grava no SaveChanges", "Errado, cada Add já grava direto no banco", "Errado, só o Update-Database grava no banco", "Errado, o contexto grava ao ser descartado"], "e": "O contexto acompanha as mudanças (change tracking) e envia tudo numa transação no SaveChanges.", "m": "Sem SaveChanges, nada muda no banco."},
+{"t": "Entity Framework", "n": "Médio", "q": "(Estilo FCC) Em um relacionamento muitos-para-muitos no modelo relacional, é necessário:", "o": ["uma tabela associativa com as duas chaves estrangeiras", "uma chave estrangeira em cada uma das duas tabelas", "uma coluna com a lista de ids em uma das tabelas", "uma chave primária composta em cada uma das duas tabelas envolvidas"], "e": "N:N é resolvido com uma terceira tabela, como CategoriaLivro (CategoriasId, LivrosId).", "m": "N:N = tabela no meio."},
+{"t": "Entity Framework", "n": "Difícil", "q": "(Estilo FGV) No EF Core, quando a chave estrangeira de um relacionamento é obrigatória e nenhum DeleteBehavior é configurado, o comportamento padrão ao excluir a entidade principal é:", "o": ["Cascade", "Restrict", "SetNull", "NoAction"], "e": "Para FK obrigatória o padrão é Cascade: os dependentes são excluídos. Por isso o Acervo configura Restrict explicitamente.", "m": "Sem configurar, FK obrigatória apaga em cascata."},
+{"t": "Entity Framework", "n": "Difícil", "q": "(Estilo Cebraspe) Julgue: em consultas LINQ sobre IQueryable no EF Core, os métodos Where e OrderBy executam imediatamente uma consulta no banco a cada chamada.", "o": ["Errado, a consulta só executa ao materializar, como no ToList", "Certo, cada Where gera uma consulta separada", "Certo, mas só quando há OrderBy na consulta", "Errado, a consulta executa uma única vez, ao criar o DbContext"], "e": "IQueryable tem execução adiada: Where e OrderBy só compõem a expressão. ToList, First, Count e afins disparam o SQL.", "m": "Monta antes, executa no fim."},
+{"t": "Filtros e validação", "n": "Fácil", "q": "(Estilo FCC) Em uma API REST, a resposta adequada para a tentativa de cadastrar um registro que viola uma regra de unicidade, como um livro já existente, é:", "o": ["409 Conflict", "404 Not Found", "401 Unauthorized", "503 Service Unavailable"], "e": "409 indica conflito com o estado atual do recurso, como um duplicado.", "m": "Já existe = conflito = 409."},
+{"t": "Filtros e validação", "n": "Médio", "q": "(Estilo FGV) Sobre validação de dados em aplicações web, assinale a alternativa correta.", "o": ["O front-end valida para a UX, mas a API também deve validar", "Validar no front-end dispensa a validação na API", "Validar na API dispensa validar no front-end em qualquer caso", "Validar só no banco de dados é suficiente para a aplicação"], "e": "O cliente pode ser contornado (Insomnia, Postman, scripts). A validação no back-end é a que protege a aplicação.", "m": "Front-end ajuda; back-end garante."},
+{"t": "Filtros e validação", "n": "Médio", "q": "(Estilo Cebraspe) Julgue: em uma busca por coleção com filtro que não encontra itens, o código de status mais adequado é 404 Not Found.", "o": ["Errado, o adequado é 200 com uma coleção vazia", "Certo, nenhum item foi encontrado", "Errado, o adequado é 204 sem corpo", "Certo, desde que a coleção exista no banco de dados"], "e": "A coleção existe, só está vazia. 404 fica para quando o recurso pedido (por exemplo, um id) não existe.", "m": "Coleção vazia = 200 []."},
+{"t": "Filtros e validação", "n": "Difícil", "q": "(Estilo FCC) Para paginar uma listagem numa API REST, a forma mais adequada de enviar a página e o tamanho é:", "o": ["na query string, como ?pagina=2&tamanho=20", "no corpo de uma requisição GET", "no caminho da URL, como /api/livros/pagina/2/20", "no cabeçalho Authorization"], "e": "Paginação, filtro e ordenação são parâmetros opcionais da coleção e vão na query string.", "m": "Opcional da coleção = query string."},
+{"t": "JWT e Angular", "n": "Fácil", "q": "(Estilo FGV) O cabeçalho HTTP usado para enviar um JWT a uma API é:", "o": ["Authorization: Bearer \u003ctoken>", "Content-Security-Policy: Bearer \u003ctoken>", "Accept: Bearer \u003ctoken>", "Cookie: Bearer \u003ctoken>"], "e": "Authorization é o header, Bearer é o tipo de autenticação e o token é a credencial.", "m": "Authorization + Bearer."},
+{"t": "JWT e Angular", "n": "Médio", "q": "(Estilo Cebraspe) Julgue: o payload de um JWT assinado é criptografado, por isso pode conter com segurança a senha do usuário.", "o": ["Errado, o payload é só codificado em Base64Url e pode ser lido", "Certo, a assinatura criptografa o conteúdo do payload", "Certo, desde que o algoritmo seja o HS256", "Errado, o payload de um JWT não pode carregar nenhum dado do usuário"], "e": "O JWT assinado (JWS) garante integridade, não sigilo. Qualquer um decodifica o payload. Claims como nome e role podem ir; senha nunca.", "m": "JWT é assinado, não é secreto."},
+{"t": "JWT e Angular", "n": "Médio", "q": "(Estilo FCC) Em relação à autenticação por sessão, uma vantagem do uso de JWT em APIs REST é:", "o": ["o servidor não precisa guardar estado de sessão", "o token nunca precisa expirar para ser seguro", "o token dispensa o uso de HTTPS na comunicação", "o servidor não precisa validar o token recebido"], "e": "O token carrega as informações necessárias e vai em cada requisição, o que combina com a restrição stateless.", "m": "Token = sessão que viaja com o cliente."},
+{"t": "JWT e Angular", "n": "Difícil", "q": "(Estilo FGV) Uma aplicação Angular em http://localhost:4200 chama uma API em https://localhost:7010 e o navegador bloqueia a resposta. A causa mais provável é:", "o": ["a API não libera a origem do Angular via CORS", "o Angular não aceita respostas em JSON", "a API não tem o atributo [ApiController]", "o token JWT foi enviado no header Accept, e não no Authorization"], "e": "Origens diferentes (porta e protocolo) exigem que a API envie os cabeçalhos CORS permitindo a origem. No ASP.NET: AddCors + UseCors.", "m": "Outra porta = outra origem = CORS."},
+{"t": "JWT e Angular", "n": "Difícil", "q": "(Estilo Cebraspe) Julgue: no Angular, o método get do HttpClient retorna um Observable, e a requisição HTTP só é enviada quando há uma inscrição (subscribe).", "o": ["Certo, sem subscribe a requisição não sai", "Errado, ele retorna uma Promise já resolvida", "Errado, a requisição sai ao chamar o get", "Errado, ele retorna o JSON diretamente"], "e": "Observables do HttpClient são frios: nada acontece até alguém se inscrever.", "m": "Sem subscribe, sem requisição."},
+{"t": "JWT e Angular", "n": "Difícil", "q": "(Estilo FCC) No Angular, a sintaxe [(ngModel)]=\"nome\" em um input caracteriza:", "o": ["two-way data binding", "interpolação", "event binding", "property binding"], "e": "[ ] leva do componente para a tela, ( ) leva da tela para o componente. [( )] faz os dois.", "m": "Banana na caixa [( )] = mão dupla."}
+];
+
+
+// ---------- estado ----------
+const TOPICS=[...new Set(BANK.map(x=>x.t))];
+const SIZES=[10,25,"Todas"];
+const LEVELS=["Fácil","Médio","Difícil"];
+let selLevels=new Set(LEVELS), selTopics=new Set(TOPICS), selSize=25, run=[], i=0, picked=-1, answers=[];
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]]}return a};
+
+function renderStart(){
+  $("topics").innerHTML="";
+  TOPICS.forEach(t=>{const b=document.createElement("button");b.className="chip";b.textContent=t+" ("+BANK.filter(x=>x.t===t).length+")";
+    b.setAttribute("aria-pressed",selTopics.has(t));b.onclick=()=>{selTopics.has(t)?selTopics.delete(t):selTopics.add(t);renderStart()};$("topics").appendChild(b)});
+  $("levels").innerHTML="";
+  LEVELS.forEach(l=>{const b=document.createElement("button");b.className="chip";b.textContent=l+" ("+BANK.filter(x=>x.n===l&&selTopics.has(x.t)).length+")";
+    b.setAttribute("aria-pressed",selLevels.has(l));b.onclick=()=>{selLevels.has(l)?selLevels.delete(l):selLevels.add(l);renderStart()};$("levels").appendChild(b)});
+  $("sizes").innerHTML="";
+  SIZES.forEach(s=>{const b=document.createElement("button");b.className="chip";b.textContent=s;b.setAttribute("aria-pressed",selSize===s);
+    b.onclick=()=>{selSize=s;renderStart()};$("sizes").appendChild(b)});
+  const n=BANK.filter(x=>selTopics.has(x.t)&&selLevels.has(x.n)).length;
+  $("avail").textContent=n?n+" questões disponíveis nos assuntos e níveis escolhidos.":"Escolha pelo menos um assunto e um nível.";
+  $("go").disabled=!n;
+}
+function build(pool){
+  return pool.map(x=>{const idx=shuffle([0,1,2,3]);return {...x,opts:idx.map(k=>x.o[k]),ans:idx.indexOf(0)}});
+}
+function begin(pool){
+  run=pool;i=0;answers=[];
+  show("quiz");renderQ();
+}
+function startNew(){
+  let pool=shuffle(BANK.filter(x=>selTopics.has(x.t)&&selLevels.has(x.n)));
+  // garante questões com diagrama no simulado quando possível
+  const n=selSize==="Todas"?pool.length:Math.min(selSize,pool.length);
+  const diag=pool.filter(x=>x.d), rest=pool.filter(x=>!x.d);
+  let pick=diag.slice(0,Math.min(2,n)); pick=pick.concat(rest.slice(0,n-pick.length));
+  if(pick.length<n) pick=pick.concat(diag.slice(2,2+n-pick.length));
+  begin(build(shuffle(pick)));
+}
+function show(id){["start","quiz","result"].forEach(s=>$(s).hidden=s!==id);window.scrollTo({top:0,behavior:"smooth"})}
+function renderQ(){
+  const q=run[i];picked=-1;
+  $("qtopic").textContent=q.t+" · "+q.n;
+  $("qcount").textContent="Questão "+(i+1)+" de "+run.length;
+  $("qbar").style.width=(i/run.length*100)+"%";
+  $("qtext").textContent=q.q;
+  $("qdiag").hidden=!q.d; $("qdiag").textContent=q.d||"";
+  $("qopts").innerHTML="";
+  q.opts.forEach((o,k)=>{const b=document.createElement("button");b.className="opt";
+    b.innerHTML="<b>"+"ABCD"[k]+"</b><span></span>";b.querySelector("span").textContent=o;
+    b.onclick=()=>{picked=k;[...$("qopts").children].forEach((c,j)=>c.classList.toggle("sel",j===k));$("confirm").disabled=false};
+    $("qopts").appendChild(b)});
+  $("qexp").hidden=true;$("confirm").hidden=false;$("confirm").disabled=true;$("next").hidden=true;
+}
+function confirmQ(){
+  if(picked<0)return;
+  const q=run[i],ok=picked===q.ans;
+  answers.push({q,picked,ok});
+  [...$("qopts").children].forEach((c,j)=>{c.disabled=true;c.classList.remove("sel");if(j===q.ans)c.classList.add("right");else if(j===picked)c.classList.add("wrong")});
+  const ex=$("qexp");ex.hidden=false;ex.className="exp "+(ok?"ok":"no");
+  ex.innerHTML="<strong></strong> <span></span>";
+  ex.querySelector("strong").textContent=ok?"Acertou.":"Errou. Correta: "+"ABCD"[q.ans]+".";
+  ex.querySelector("span").textContent=q.e;
+  if(q.m){const t=document.createElement("div");t.className="tip";t.innerHTML="<b>Para lembrar</b><span></span>";t.querySelector("span").textContent=q.m;ex.appendChild(t)}
+  $("confirm").hidden=true;$("next").hidden=false;
+  $("next").textContent=i===run.length-1?"Ver resultado →":"Próxima →";
+  $("qbar").style.width=((i+1)/run.length*100)+"%";
+  $("next").focus();
+}
+function nextQ(){ if(i<run.length-1){i++;renderQ();window.scrollTo({top:0,behavior:"smooth"})} else finish() }
+function finish(){
+  if(!answers.length){show("start");renderStart();return}
+  const hit=answers.filter(a=>a.ok).length,tot=answers.length,pct=Math.round(hit/tot*100);
+  $("rscore").textContent=hit+"/"+tot;
+  $("rpct").textContent=pct+"% de acerto";
+  $("rmsg").textContent=pct>=85?"Excelente, está pronto para a prova.":pct>=70?"Bom resultado. Revise os erros abaixo e faça mais uma rodada.":"Vale revisar o resumo nos assuntos com mais erros e refazer as erradas.";
+  const by={};answers.forEach(a=>{[a.q.t,"Nível "+a.q.n].forEach(k=>{by[k]=by[k]||[0,0];by[k][1]++;if(a.ok)by[k][0]++})});
+  $("rstats").innerHTML="";Object.entries(by).forEach(([t,[h,n]])=>{const d=document.createElement("div");d.className="stat";
+    d.innerHTML="<strong></strong><br><span class='muted'></span>";d.querySelector("strong").textContent=t;d.querySelector("span").textContent=h+" de "+n;$("rstats").appendChild(d)});
+  const errs=answers.filter(a=>!a.ok);
+  $("redo").hidden=!errs.length;
+  const box=$("rerrs");box.innerHTML="";
+  if(!errs.length){box.innerHTML="<p><strong>Nenhum erro.</strong> Gabaritou essa rodada.</p>"}
+  else{const h=document.createElement("h2");h.textContent="Revise os erros ("+errs.length+")";box.appendChild(h);
+    errs.forEach(a=>{const d=document.createElement("div");d.className="err";
+      d.innerHTML="<span class='tag'></span><strong></strong><span style='color:var(--bad)'></span><span style='color:var(--ok)'></span><span class='muted'></span><div class='tip'><b>Para lembrar</b><span></span></div>";
+      const s=d.children;s[5].querySelector("span").textContent=a.q.m||"";s[0].textContent=a.q.t+" · "+a.q.n;s[1].textContent=a.q.q;s[2].textContent="Sua resposta: "+a.q.opts[a.picked];s[3].textContent="Correta: "+a.q.opts[a.q.ans];s[4].textContent=a.q.e;box.appendChild(d)})}
+  show("result");
+}
+$("go").onclick=startNew;
+$("confirm").onclick=confirmQ;
+$("next").onclick=nextQ;
+$("quit").onclick=finish;
+$("again").onclick=()=>{show("start");renderStart()};
+$("redo").onclick=()=>begin(build(shuffle(answers.filter(a=>!a.ok).map(a=>BANK.find(b=>b.q===a.q.q)))));
+renderStart();
+</script>
+
+</body>
+</html>
