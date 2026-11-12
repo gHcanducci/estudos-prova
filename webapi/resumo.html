@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Resumo Back-End/Web API</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: uma página curta, coluna única, com o pipeline como lista de seis linhas */
+:root{
+  --bg:#f3f6f9; --surface:#ffffff; --surface2:#e9eef4; --fg:#142230; --muted:#4d6073; --line:#d3dce6;
+  --accent:#1f5fbf; --accent-soft:#dbe8fb; --ok:#17784a; --ok-soft:#dcf2e6;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Schibsted Grotesk","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1620; --surface:#15212d; --surface2:#1c2b3a; --fg:#e6eef6; --muted:#9db0c3; --line:#2a3b4d;
+  --accent:#6ea6f5; --accent-soft:#1b3050; --ok:#5fcf96; --ok-soft:#173a2b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1620; --surface:#15212d; --surface2:#1c2b3a; --fg:#e6eef6; --muted:#9db0c3; --line:#2a3b4d;
+  --accent:#6ea6f5; --accent-soft:#1b3050; --ok:#5fcf96; --ok-soft:#173a2b; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.55;
+  padding-block:40px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:36px}
+h1,h2{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,6vw,2.8rem);letter-spacing:-.02em}
+h2{font-size:1.35rem}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface2);padding:2px 6px;border-radius:5px}
+.label{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+section{display:flex;flex-direction:column;gap:14px}
+.thesis{background:var(--accent-soft);border-radius:14px;padding:18px 22px;font-family:var(--display);font-size:1.25rem;line-height:1.3}
+.flow{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.flow li{display:grid;grid-template-columns:120px minmax(0,1fr);gap:14px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.flow li:last-child{border-bottom:0}
+.flow b{font-family:var(--display);font-size:1.05rem}
+.flow span{color:var(--muted)}
+dl{margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+dt{font-weight:600}
+dd{margin:2px 0 0;color:var(--muted)}
+.box{background:var(--ok-soft);border-radius:12px;padding:14px 18px}
+ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.col{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.col b{font-family:var(--display)}
+.col span{color:var(--muted);font-size:.95rem}
+.story{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+@media (max-width:520px){.flow li{grid-template-columns:1fr;gap:2px}body{font-size:16px}}
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:.95rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface2);font-family:var(--display)}
+tr:last-child td{border-bottom:0}
+.tw{overflow-x:auto}
+.tw table{min-width:560px}
+.fp{background:var(--accent-soft);border-radius:12px;padding:12px 16px}
+.warn{background:#fdecc8;color:#3a2a00;border-radius:12px;padding:12px 16px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .warn{background:#3a2f12;color:#f6e3b0}}
+h3{font-family:var(--display);margin:6px 0 0;font-size:1.05rem}
+pre{margin:0;font-family:var(--mono);font-size:.8rem;line-height:1.45;background:var(--surface2);border-radius:10px;padding:14px;overflow-x:auto;white-space:pre}
+code{font-family:var(--mono);font-size:.88em}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a href="../" style="color:var(--accent);font-weight:600;text-decoration:none">← Início</a>
+<header style="display:flex;flex-direction:column;gap:12px">
+  <span class="label">Programação Back-End/Web API · Prof. Lenon Fachiano</span>
+  <h1>Resumo de prova</h1>
+  <div class="thesis">O cliente manda verbo + URL + cabeçalho (+ corpo). A API passa pelo Controller, pelo Service e pelo DbContext até o banco e devolve status + cabeçalho (+ corpo). A matéria inteira é esse caminho.</div>
+  <div class="warn"><strong>Formato da prova:</strong> 10 questões do professor (aulas e projeto Acervo) + 10 questões de concurso público de TI. Para as de concurso, cuidado com as palavras <em>sempre</em>, <em>nunca</em>, <em>obrigatoriamente</em> e <em>apenas</em>.</div>
+</header>
+
+<section>
+  <h2>1. HTTP, cliente-servidor e API</h2>
+  <ul>
+    <li><strong>Front-end:</strong> interface com o usuário, roda no navegador (HTML, CSS, JavaScript, Angular). <strong>Back-end:</strong> roda no servidor, processa a solicitação e retorna a resposta (C#, Java, Python, PHP).</li>
+    <li><strong>API</strong> (Interface de Programação de Aplicações): regras e padrões que permitem a comunicação entre aplicações diferentes.</li>
+    <li><strong>HTTP:</strong> protocolo de comunicação baseado em requisição e resposta. É a base da comunicação com a API.</li>
+    <li>O servidor tem <em>endpoints</em>, <em>regras de negócio</em> e <em>acesso a dados</em>.</li>
+  </ul>
+  <div class="cols">
+    <div class="col"><b>Requisição (request)</b><span>Verbo + URL (endpoint) + Cabeçalho (+ Corpo)</span></div>
+    <div class="col"><b>Resposta (response)</b><span>Status code + Cabeçalho (+ Corpo)</span></div>
+  </div>
+  <pre>POST /api/produtos                      ← método + endpoint
+Content-Type: application/json          ← header: formato do corpo
+Authorization: Bearer TOKEN             ← header: credencial
+
+{ "nome": "Mouse", "preco": 120.00 }    ← body</pre>
+  <h3>Métodos HTTP e CRUD</h3>
+  <div class="tw"><table>
+    <tr><th>Método</th><th>CRUD</th><th>Uso</th><th>Idempotente?</th><th>Seguro?</th></tr>
+    <tr><td><b>GET</b></td><td>Read</td><td>Consultar. Sem corpo.</td><td>Sim</td><td>Sim</td></tr>
+    <tr><td><b>POST</b></td><td>Create</td><td>Criar. Corpo com os dados.</td><td>Não</td><td>Não</td></tr>
+    <tr><td><b>PUT</b></td><td>Update</td><td>Substitui todos os dados do recurso (pode criar se não existir).</td><td>Sim</td><td>Não</td></tr>
+    <tr><td><b>PATCH</b></td><td>Update</td><td>Atualiza parcialmente o recurso.</td><td>Não necessariamente</td><td>Não</td></tr>
+    <tr><td><b>DELETE</b></td><td>Delete</td><td>Remover.</td><td>Sim</td><td>Não</td></tr>
+  </table></div>
+  <p><strong>Seguro</strong> = não altera o estado do servidor (GET, HEAD, OPTIONS). <strong>Idempotente</strong> = repetir a mesma requisição dá o mesmo efeito final que fazer uma vez. Cai muito em concurso.</p>
+  <h3>Códigos de status</h3>
+  <div class="tw"><table>
+    <tr><th>Classe</th><th>Códigos que caem</th></tr>
+    <tr><td><b>1xx</b> Informativo</td><td>100 Continue</td></tr>
+    <tr><td><b>2xx</b> Sucesso</td><td><b>200 OK</b> · <b>201 Created</b> (recurso criado; vem com o cabeçalho Location) · <b>204 No Content</b> (deu certo, sem corpo)</td></tr>
+    <tr><td><b>3xx</b> Redirecionamento</td><td>301 Moved Permanently · 304 Not Modified</td></tr>
+    <tr><td><b>4xx</b> Erro do cliente</td><td><b>400 Bad Request</b> · <b>401 Unauthorized</b> (não autenticado) · <b>403 Forbidden</b> (autenticado, sem permissão) · <b>404 Not Found</b> · <b>409 Conflict</b> (ex.: livro duplicado) · 418 I'm a teapot</td></tr>
+    <tr><td><b>5xx</b> Erro do servidor</td><td><b>500 Internal Server Error</b> (exceção não tratada) · 503 Service Unavailable</td></tr>
+  </table></div>
+  <h3>Path parameter x query string x body</h3>
+  <div class="tw"><table>
+    <tr><th></th><th>Exemplo</th><th>Para quê</th><th>No ASP.NET</th></tr>
+    <tr><td><b>Parâmetro de rota</b></td><td><code>GET /api/livros/1</code></td><td>Identifica um recurso específico</td><td><code>[HttpGet("{id}")]</code>, <code>[FromRoute]</code></td></tr>
+    <tr><td><b>Query string</b></td><td><code>GET /api/livros?autor=machado&amp;ano=1881</code></td><td>Filtro, pesquisa, ordenação, paginação, opcionais</td><td><code>[FromQuery]</code></td></tr>
+    <tr><td><b>Body</b></td><td><code>{ "titulo": "..." }</code></td><td>Transportar os dados do recurso (POST, PUT)</td><td><code>[FromBody]</code></td></tr>
+  </table></div>
+  <p>Na query string, <code>?</code> indica o primeiro parâmetro e <code>&amp;</code> separa os seguintes.</p>
+</section>
+
+<section>
+  <h2>2. WebServices, SOAP e REST</h2>
+  <ul>
+    <li><strong>WebService:</strong> tecnologia de comunicação e troca de dados entre sistemas diferentes <em>obrigatoriamente por meio de uma rede</em>.</li>
+    <li><strong>SOAP:</strong> modelo mais antigo, rígido e muito seguro. Usa <em>XML</em> (envelope SOAP), contrato descrito em <em>WSDL</em>.</li>
+    <li><strong>REST:</strong> modelo mais novo, leve e rápido. Usa os verbos da web (HTTP) e os dados podem ser JSON ou outros formatos.</li>
+  </ul>
+  <div class="tw"><table>
+    <tr><th>Característica</th><th>API</th><th>WebService</th></tr>
+    <tr><td><b>Escopo</b></td><td>Termo genérico para qualquer interface de software</td><td>Subconjunto de APIs focado em rede</td></tr>
+    <tr><td><b>Conexão</b></td><td>Não precisa de rede (pode ser local)</td><td>Sempre precisa de rede</td></tr>
+    <tr><td><b>Design</b></td><td>Flexível (DLLs, bibliotecas nativas, Web)</td><td>Arquitetura cliente-servidor Web</td></tr>
+    <tr><td><b>Acesso</b></td><td>Sistemas internos ou externos</td><td>Quase sempre via HTTP/HTTPS</td></tr>
+  </table></div>
+  <p><strong>Todo WebService é uma API, mas nem toda API é um WebService.</strong></p>
+  <div class="tw"><table>
+    <tr><th></th><th>SOAP</th><th>REST</th></tr>
+    <tr><td><b>O que é</b></td><td>Protocolo, com regras rígidas</td><td>Estilo arquitetural</td></tr>
+    <tr><td><b>Formato</b></td><td>Só XML</td><td>JSON, XML, texto...</td></tr>
+    <tr><td><b>Contrato</b></td><td>WSDL</td><td>Sem contrato obrigatório (OpenAPI/Swagger documenta)</td></tr>
+    <tr><td><b>Operações</b></td><td>Chama operações (métodos)</td><td>Manipula recursos (substantivos) com verbos HTTP</td></tr>
+    <tr><td><b>Peso</b></td><td>Mais pesado; segurança via WS-Security</td><td>Leve e rápido; segurança via HTTPS e tokens</td></tr>
+  </table></div>
+  <h3>REST: as restrições</h3>
+  <p>Estilo arquitetural para sistemas distribuídos que usa HTTP. <strong>Quando a aplicação atende a todas as restrições, ela é RESTful.</strong></p>
+  <dl>
+    <dt>Interface uniforme</dt><dd>Requisições para o mesmo recurso têm a mesma aparência, não importa a origem.</dd>
+    <dt>Desacoplamento cliente-servidor</dt><dd>Cliente e servidor evoluem de forma independente.</dd>
+    <dt>Stateless (sem estado)</dt><dd>Cada requisição traz tudo que é preciso para processá-la. O servidor não guarda sessão do cliente. (Por isso o JWT vai em toda requisição.)</dd>
+    <dt>Cache</dt><dd>Respostas podem ser armazenadas no cliente ou num intermediário.</dd>
+    <dt>Sistema em camadas</dt><dd>Pode haver intermediários (proxy, balanceador) entre cliente e servidor.</dd>
+    <dt>Código sob demanda (opcional)</dt><dd>O servidor pode enviar código executável ao cliente. É a única restrição opcional.</dd>
+  </dl>
+  <h3>URLs REST: recurso no plural, verbo no método</h3>
+  <pre>GET    /api/alunos       lista todos
+GET    /api/alunos/10    busca um
+POST   /api/alunos       cria (sem id na URL: o banco gera)
+PUT    /api/alunos/10    altera
+DELETE /api/alunos/10    remove
+
+Errado: GET /api/buscarAlunos · POST /api/alunos/10 · GET /api/alunos/excluir/10</pre>
+</section>
+
+<section>
+  <h2>3. C#, POO e ASP.NET Core</h2>
+  <h3>Program.cs, na ordem</h3>
+  <ol class="flow">
+    <li><b>CreateBuilder</b><span><code>WebApplication.CreateBuilder(args)</code> cria e configura a aplicação.</span></li>
+    <li><b>Serviços</b><span><code>builder.Services.AddControllers()</code> habilita os controllers; <code>AddDbContext</code>, <code>AddScoped</code>, <code>AddSwaggerGen</code>.</span></li>
+    <li><b>Build</b><span><code>var app = builder.Build();</code> constrói a aplicação.</span></li>
+    <li><b>Pipeline</b><span><code>UseSwagger</code> (em Development), <code>UseHttpsRedirection</code>, <code>UseAuthentication</code>, <code>UseAuthorization</code>.</span></li>
+    <li><b>MapControllers</b><span>Mapeia os endpoints definidos nos controllers.</span></li>
+    <li><b>Run</b><span><code>app.Run()</code> inicia o servidor.</span></li>
+  </ol>
+  <h3>Controller</h3>
+  <pre>[Route("api/[controller]")]   // [controller] = nome da classe sem "Controller" → api/Livros
+[ApiController]                // validação automática (400) e binding inteligente
+public class LivrosController : ControllerBase
+{
+    [HttpGet]          public async Task&lt;IActionResult&gt; Listar([FromQuery] LivroFilterDTO filtro)
+    [HttpGet("{id}")]  public async Task&lt;IActionResult&gt; GetById(int id)
+    [HttpPost]         public async Task&lt;IActionResult&gt; Post([FromBody] LivroCreateDTO livro)
+    [HttpPut("{id}")]  public async Task&lt;IActionResult&gt; Alterar(int id, [FromBody] LivroUpdateDTO dto)
+    [HttpDelete("{id}")] public async Task&lt;IActionResult&gt; Excluir(int id)
+}</pre>
+  <p><strong>Endpoint</strong> = rota + método HTTP. Um controller é criado <em>a cada requisição</em>: uma <code>List&lt;Produto&gt;</code> que é campo do controller (aula 3) volta ao estado inicial em toda chamada.</p>
+  <div class="tw"><table>
+    <tr><th>Método do ControllerBase</th><th>Status</th></tr>
+    <tr><td><code>Ok(obj)</code></td><td>200</td></tr>
+    <tr><td><code>CreatedAtAction(nameof(GetById), new { id }, obj)</code></td><td>201 + cabeçalho Location apontando para o GetById</td></tr>
+    <tr><td><code>NoContent()</code></td><td>204 (PUT ou DELETE sem corpo)</td></tr>
+    <tr><td><code>BadRequest(obj)</code></td><td>400</td></tr>
+    <tr><td><code>NotFound()</code></td><td>404</td></tr>
+    <tr><td><code>Conflict(obj)</code></td><td>409</td></tr>
+    <tr><td><code>Unauthorized()</code> / <code>Forbid()</code></td><td>401 / 403</td></tr>
+    <tr><td>Exceção não tratada</td><td>500</td></tr>
+  </table></div>
+  <p><code>IActionResult</code> deixa o método retornar qualquer resultado (Ok, NotFound...). <code>ActionResult&lt;T&gt;</code> faz o mesmo e ainda declara o tipo do corpo de sucesso.</p>
+  <h3>Camadas da API</h3>
+  <div class="cols">
+    <div class="col"><b>Controller</b><span>HTTP, rotas, status, response. Recebe a requisição, encaminha ao Service e responde.</span></div>
+    <div class="col"><b>Service</b><span>Regras de negócio, operações, processamento. Ex.: não cadastrar livro duplicado.</span></div>
+    <div class="col"><b>DbContext</b><span>Sessão com o banco: consultar, inserir, alterar, excluir, acompanhar mudanças, confirmar.</span></div>
+  </div>
+  <h3>Entity x DTO</h3>
+  <div class="tw"><table>
+    <tr><th>Entity</th><th>DTO (Data Transfer Object)</th></tr>
+    <tr><td>Representa a tabela do banco (persistência)</td><td>Transporta dados entre camadas ou entre API e cliente (transferência)</td></tr>
+    <tr><td><code>Livro</code>, <code>Autor</code>, <code>Categoria</code></td><td><code>LivroCreateDTO</code>, <code>LivroUpdateDTO</code>, <code>LivroResponseDTO</code>, <code>LivroFilterDTO</code>, <code>ErroResponseDTO</code></td></tr>
+  </table></div>
+  <p>Por que DTO: <strong>proteção</strong> (não expõe a entidade inteira), <strong>projeção</strong> (só os campos necessários) e <strong>evita loops</strong> (Livro → Autor → Livros → Autor... na serialização JSON).</p>
+  <h3>Interface + injeção de dependência</h3>
+  <pre>public interface ILivroService { Task&lt;List&lt;LivroResponseDTO&gt;&gt; ListarAsync(LivroFilterDTO filtro); ... }
+public class LivroService : ILivroService { ... }
+
+// Program.cs
+builder.Services.AddScoped&lt;ILivroService, LivroService&gt;();
+
+// Controller recebe pelo construtor
+public LivrosController(ILivroService service) =&gt; _service = service;</pre>
+  <div class="tw"><table>
+    <tr><th>Ciclo de vida</th><th>Uma instância por...</th></tr>
+    <tr><td><code>AddTransient</code></td><td>cada vez que é pedido</td></tr>
+    <tr><td><code>AddScoped</code></td><td>requisição HTTP (padrão do DbContext; usado no Acervo)</td></tr>
+    <tr><td><code>AddSingleton</code></td><td>aplicação inteira</td></tr>
+  </table></div>
+  <h3>C# que aparece no código</h3>
+  <dl>
+    <dt><code>int?</code>, <code>.HasValue</code>, <code>.Value</code></dt><dd>Tipo que aceita null. Filtro opcional: <code>if (filtro.AnoInicio.HasValue)</code>.</dd>
+    <dt><code>?.</code> e <code>??</code></dt><dd><code>dto.CategoriaIds?.Distinct().ToList() ?? new List&lt;int&gt;()</code>: se for null, não quebra e usa lista vazia.</dd>
+    <dt><code>null!</code></dt><dd>Diz ao compilador "confie, não será null". Não muda nada em tempo de execução.</dd>
+    <dt><code>async</code> / <code>await</code> / <code>Task</code></dt><dd>Operações assíncronas com o banco (<code>ToListAsync</code>, <code>SaveChangesAsync</code>), sem travar a thread.</dd>
+    <dt><code>=&gt;</code> (lambda)</dt><dd><code>l =&gt; l.AutorId == id</code>: função curta usada no LINQ.</dd>
+    <dt>POO</dt><dd>Encapsulamento (propriedades get/set, <code>private readonly _service</code>), herança (<code>: ControllerBase</code>, <code>: DbContext</code>), polimorfismo (interface com várias implementações), abstração (interface <code>ILivroService</code>).</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>4. Persistência com ORM (Entity Framework Core)</h2>
+  <div class="tw"><table>
+    <tr><th>Memória (<code>List&lt;T&gt;</code>)</th><th>Banco de dados (tabelas)</th></tr>
+    <tr><td>Temporária: dados somem ao encerrar</td><td>Persistente: dados permanecem</td></tr>
+    <tr><td>Boa para testes simples</td><td>Adequada para aplicações reais</td></tr>
+    <tr><td>Não compartilhada entre instâncias</td><td>Pode ser compartilhada</td></tr>
+  </table></div>
+  <ul>
+    <li><strong>ORM</strong> (Object-Relational Mapping): facilita a comunicação entre o modelo orientado a objetos da aplicação e o modelo relacional do banco. Classe ↔ tabela, propriedade ↔ coluna, objeto ↔ linha.</li>
+    <li><strong>EF Core</strong>: o ORM da disciplina. Fluxo: ASP.NET Core → EF Core → SGBD → banco.</li>
+    <li>Pacotes NuGet: <code>Microsoft.EntityFrameworkCore.SqlServer</code> (integração com SQL Server), <code>.Design</code> (recursos de desenvolvimento, inclusive migrations), <code>.Tools</code> (comandos das migrations).</li>
+    <li><strong>DbContext:</strong> uma sessão de comunicação entre a aplicação e o banco. <strong>DbSet&lt;Livro&gt; Livros:</strong> representa o conjunto de livros (a tabela); é por ele que se opera nos registros.</li>
+    <li>String de conexão no <code>appsettings.json</code> (<code>ConnectionStrings:DefaultConnection</code>); registro no Program.cs com <code>AddDbContext&lt;AppDbContext&gt;(o =&gt; o.UseSqlServer(...))</code>.</li>
+    <li><strong>Migration:</strong> uma evolução da estrutura do banco. <code>Add-Migration CriarTabelaLivro</code> cria a migração; <code>Update-Database</code> aplica no banco (no Console do Gerenciador de Pacotes).</li>
+  </ul>
+  <h3>CRUD com o contexto</h3>
+  <pre>await _context.Livros.ToListAsync();                 // lista
+await _context.Livros.FindAsync(id);                  // busca pela chave primária
+_context.Livros.Add(livro);                           // marca para inserir
+_context.Livros.Remove(livro);                        // marca para excluir
+await _context.SaveChangesAsync();                    // grava tudo no banco</pre>
+  <p>Sem <code>SaveChangesAsync()</code> nada vai para o banco: o contexto só acompanha as mudanças.</p>
+  <h3>Relacionamentos</h3>
+  <div class="tw"><table>
+    <tr><th>Tipo</th><th>Exemplo no Acervo</th><th>Como fica</th></tr>
+    <tr><td><b>1:1</b></td><td>(ex.: usuário e perfil)</td><td>Chave estrangeira única</td></tr>
+    <tr><td><b>1:N</b></td><td>Um Autor tem muitos Livros</td><td><code>Livro.AutorId</code> (FK) + <code>Livro.Autor</code> + <code>Autor.Livros</code></td></tr>
+    <tr><td><b>N:N</b></td><td>Livro ↔ Categoria</td><td>Tabela associativa <code>CategoriaLivro</code> (CategoriasId, LivrosId), criada pelo EF</td></tr>
+  </table></div>
+  <pre>modelBuilder.Entity&lt;Livro&gt;()                // Fluent API, no OnModelCreating
+    .HasOne(l =&gt; l.Autor)                    // um livro tem um autor
+    .WithMany(a =&gt; a.Livros)                 // um autor tem muitos livros
+    .HasForeignKey(l =&gt; l.AutorId)
+    .OnDelete(DeleteBehavior.Restrict);      // impede apagar autor que tem livros
+
+modelBuilder.Entity&lt;Livro&gt;()
+    .HasMany(l =&gt; l.Categorias)
+    .WithMany(c =&gt; c.Livros);                // N:N</pre>
+  <p>Autor é a entidade <em>principal</em>; Livro é a <em>dependente</em> (tem a FK). Ao excluir um autor com livros, as opções são: excluir os livros junto (<code>Cascade</code>, o padrão do EF quando a FK é obrigatória), impedir a exclusão (<code>Restrict</code>) ou deixar o livro sem autor (<code>SetNull</code>, exige FK anulável).</p>
+  <h3>Include x Select</h3>
+  <div class="tw"><table>
+    <tr><th>Include</th><th>Select</th></tr>
+    <tr><td>Carrega a entidade com os dados relacionados (eager loading)</td><td>Projeta exatamente os campos que serão retornados</td></tr>
+    <tr><td><code>_context.Livros.Include(l =&gt; l.Autor)</code></td><td><code>.Select(l =&gt; new LivroResponseDTO { ... Autor = new AutorDTO { ... } })</code></td></tr>
+    <tr><td>Usado no <code>AlterarAsync</code> para trocar as categorias</td><td>Usado no <code>ListarAsync</code> e no <code>BuscarPorIdAsync</code></td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>5. Filtros e consultas</h2>
+  <p>Filtros reduzem os dados trafegados, melhoram o desempenho e a experiência, tiram processamento do front-end e reaproveitam o mesmo endpoint.</p>
+  <pre>var query = _context.Livros.AsQueryable();         // nada vai ao banco ainda
+
+if (!string.IsNullOrWhiteSpace(filtro.Titulo))
+    query = query.Where(l =&gt; l.Titulo.Contains(filtro.Titulo));   // busca parcial (LIKE)
+if (filtro.AnoInicio.HasValue)
+    query = query.Where(l =&gt; l.AnoPublicacao &gt;= filtro.AnoInicio.Value);
+if (filtro.Categoria.HasValue)
+    query = query.Where(l =&gt; l.Categorias.Any(c =&gt; c.Id == filtro.Categoria.Value));
+
+switch (filtro.OrdenarPor.ToLower()) { case "titulo": query = query.OrderBy(l =&gt; l.Titulo); break; ... }
+
+return await query.Select(...).ToListAsync();      // aqui o SQL é montado e executado</pre>
+  <ul>
+    <li><strong>DTO de filtro</strong> (<code>LivroFilterDTO</code> + <code>[FromQuery]</code>): evita assinaturas enormes conforme os filtros crescem. Propriedades com <code>?</code> são opcionais.</li>
+    <li><strong>Igualdade x parcial:</strong> <code>l.Titulo == filtro.Titulo</code> busca igual; <code>l.Titulo.Contains(filtro.Titulo)</code> busca parcial.</li>
+    <li><strong>Any</strong> verifica existência (true/false). <strong>Count</strong> diz quantos atendem à condição. <strong>FirstOrDefault</strong> retorna o primeiro ou <code>null</code>.</li>
+    <li><strong>Status de filtro:</strong> filtro sem resultado → <strong>200 OK com lista vazia <code>[]</code></strong>. Recurso específico inexistente (<code>/api/livros/999</code>) → <strong>404</strong>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>6. Validações e erros</h2>
+  <p>O front-end pode validar (melhora a UX), mas não há garantia: os dados podem vir direto do Insomnia. A validação no back-end protege a aplicação.</p>
+  <ol class="flow">
+    <li><b>JSON (body)</b><span>chega na requisição</span></li>
+    <li><b>ASP.NET Core</b><span>desserialização / model binding: transforma o JSON em objeto</span></li>
+    <li><b>LivroCreateDTO</b><span>Data Annotations são verificadas</span></li>
+    <li><b>Controller</b><span>só é executado se o modelo for válido</span></li>
+  </ol>
+  <div class="tw"><table>
+    <tr><th>Momento</th><th>Quem valida</th><th>Exemplo</th><th>Resposta</th></tr>
+    <tr><td><b>Estrutura / tipo</b></td><td>ASP.NET Core</td><td><code>"anoPublicacao": "texto"</code></td><td>400 automático</td></tr>
+    <tr><td><b>Formato do DTO</b></td><td>Data Annotations</td><td>Título obrigatório, ano entre 1 e 2500</td><td>400 automático (<code>[ApiController]</code>)</td></tr>
+    <tr><td><b>Regra de negócio</b></td><td>Service</td><td>Não cadastrar dois livros iguais; autor precisa existir</td><td>409 Conflict (slide) ou 400</td></tr>
+  </table></div>
+  <p>Annotations: <code>[Required]</code>, <code>[StringLength(150, MinimumLength = 2)]</code>, <code>[MaxLength]</code>, <code>[MinLength]</code>, <code>[Range(1, 2500)]</code>, <code>[EmailAddress]</code>, todas com <code>ErrorMessage</code>.</p>
+  <div class="warn"><strong>Pegadinha do Acervo:</strong> <code>[Required]</code> em <code>int AutorId</code> nunca falha. Se o JSON não mandar o campo, o <code>int</code> vale 0 (não null). Quem barra é o Service, que não acha o autor 0. Para o <code>[Required]</code> funcionar, o tipo teria que ser <code>int?</code>.</div>
+  <h3>Padronizando o erro (ErroResponseDTO)</h3>
+  <p>O <code>InvalidModelStateResponseFactory</code> no Program.cs troca a resposta padrão de validação por um <code>ErroResponseDTO</code> com Status 400, Mensagem "Um ou mais campos são inválidos." e um dicionário <code>Erros</code> (campo → mensagens).</p>
+  <h3>Regra de negócio no Service, status no Controller</h3>
+  <pre>// Service: lança a exceção
+if (existe) throw new InvalidOperationException("Já existe um livro com este título e autor.");
+
+// Controller: traduz para HTTP
+catch (InvalidOperationException ex) { return Conflict(new ErroResponseDTO { ... }); }  // slide: 409</pre>
+  <p>No código do Acervo, o catch devolve <code>BadRequest</code> (400). E o <code>ArgumentException</code> ("Ao menos uma Categoria não existe.") <strong>não é capturado</strong>: vira 500.</p>
+</section>
+
+<section>
+  <h2>7. Autenticação, autorização e JWT</h2>
+  <div class="cols">
+    <div class="col"><b>Autenticação</b><span>"Quem é você?" Login → credencial → verificação → usuário autenticado. Falhou: <b>401 Unauthorized</b>.</span></div>
+    <div class="col"><b>Autorização</b><span>"O que você pode fazer?" Ex.: usuário comum lista livros; só administrador apaga. Sem permissão: <b>403 Forbidden</b>.</span></div>
+  </div>
+  <div class="tw"><table>
+    <tr><th>Autenticação tradicional (sessão)</th><th>Token (JWT)</th></tr>
+    <tr><td>Cliente → usuário + senha → servidor valida → guarda uma <b>sessão</b> no servidor</td><td>Login → API valida → emite um <b>token</b>, que o cliente manda em cada requisição</td></tr>
+    <tr><td>Servidor guarda estado</td><td>Stateless: combina com REST</td></tr>
+  </table></div>
+  <p><strong>Token:</strong> informação emitida após uma autenticação bem-sucedida e usada depois para identificar e autorizar o cliente.</p>
+  <p><strong>JWT (JSON Web Token):</strong> formato compacto para transportar informações entre partes de forma verificável. Três partes separadas por ponto: <code>header.payload.signature</code>.</p>
+  <dl>
+    <dt>Header</dt><dd>Informações sobre o token: tipo (<code>typ: JWT</code>) e algoritmo de assinatura (<code>alg: HS256</code>).</dd>
+    <dt>Payload</dt><dd>Os <em>claims</em>: informações do usuário ou do token (<code>sub</code>, <code>nome</code>, <code>email</code>, <code>role</code>, <code>exp</code>). É codificado em Base64Url, <strong>não criptografado</strong>: qualquer um consegue ler. Nunca coloque senha.</dd>
+    <dt>Signature</dt><dd>Header + Payload + chave secreta. Verifica se o token foi alterado. Token alterado → 401.</dd>
+    <dt>Expiração</dt><dd>O token não deve valer para sempre (<code>exp</code>). Expirado → 401. Reduz o risco se ele vazar.</dd>
+  </dl>
+  <pre>Authorization: Bearer eyJhbGciOi...
+└─ header ───┘ └ tipo ┘ └ credencial (o token)</pre>
+  <p><strong>Endpoint público x protegido:</strong> GET pode ser público; POST pode exigir autenticação; DELETE pode exigir administrador. No ASP.NET: <code>[Authorize]</code>, <code>[Authorize(Roles = "Administrador")]</code>, <code>[AllowAnonymous]</code>; no Program.cs, <code>AddAuthentication().AddJwtBearer(...)</code> e <code>app.UseAuthentication()</code> antes de <code>app.UseAuthorization()</code>.</p>
+</section>
+
+<section>
+  <h2>8. Front-end em Angular consumindo a API</h2>
+  <p>Está nos objetivos da matéria e no fluxo do projeto (API REST → banco → autenticação → aplicação Angular → integração), mas não apareceu nos slides que você mandou. Para as questões de concurso, o essencial:</p>
+  <ul>
+    <li><strong>Componente:</strong> classe TypeScript + template HTML + estilo. <strong>Service:</strong> classe <code>@Injectable</code> que concentra as chamadas à API, injetada nos componentes.</li>
+    <li><strong>HttpClient:</strong> <code>this.http.get&lt;Livro[]&gt;('https://localhost:7010/api/livros')</code> retorna um <strong>Observable</strong>; a requisição só sai quando alguém faz <code>.subscribe()</code>.</li>
+    <li><strong>Data binding:</strong> <code>{{ valor }}</code> interpolação · <code>[prop]</code> property binding · <code>(click)</code> event binding · <code>[(ngModel)]</code> two-way.</li>
+    <li><strong>CORS:</strong> o Angular roda em outra origem (ex.: <code>localhost:4200</code>), então a API precisa liberar essa origem (<code>AddCors</code> + <code>UseCors</code>). Sem isso, o navegador bloqueia a resposta.</li>
+    <li><strong>JWT no front:</strong> guarda o token após o login e envia no cabeçalho <code>Authorization: Bearer</code>, normalmente com um <em>interceptor</em>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Pegadinhas de prova</h2>
+  <ul>
+    <li>PUT substitui tudo (e pode criar); PATCH atualiza parte.</li>
+    <li>GET, PUT e DELETE são idempotentes; POST não.</li>
+    <li>401 = não sei quem você é (ou token inválido/expirado). 403 = sei quem é, mas não pode.</li>
+    <li>Filtro sem resultado = 200 com <code>[]</code>. Recurso por id inexistente = 404.</li>
+    <li>POST criado com sucesso = 201 Created (<code>CreatedAtAction</code>), não 200.</li>
+    <li>DELETE e PUT sem corpo de resposta = 204 No Content.</li>
+    <li>SOAP é protocolo e usa só XML; REST é estilo arquitetural e aceita JSON, XML etc.</li>
+    <li>Todo WebService precisa de rede; uma API não necessariamente.</li>
+    <li>Stateless: o servidor não guarda estado entre requisições. Código sob demanda é a única restrição REST opcional.</li>
+    <li>Payload do JWT é só codificado (Base64Url), não criptografado. A assinatura garante integridade, não sigilo.</li>
+    <li>Entity = persistência; DTO = transferência.</li>
+    <li>Controller não tem regra de negócio; o Service tem.</li>
+    <li><code>[ApiController]</code> devolve 400 antes do método do controller rodar.</li>
+    <li><code>[Required]</code> em <code>int</code> não funciona: o padrão é 0.</li>
+    <li><code>AsQueryable</code> + <code>Where</code> não executam nada; só o <code>ToListAsync()</code> vai ao banco.</li>
+    <li>Sem <code>SaveChangesAsync()</code>, nada é gravado.</li>
+    <li><code>Add-Migration</code> cria; <code>Update-Database</code> aplica.</li>
+    <li><code>AddScoped</code> = uma instância por requisição.</li>
+  </ul>
+</section>
+<p style="color:var(--muted);font-size:.9rem">Baseado nas aulas 1 a 10, no projeto Acervo, no projeto Hello (aula 3), nos scripts SQL e nos objetivos da disciplina. Boa prova.</p>
+</div>
+</body>
+</html>
